@@ -327,6 +327,9 @@ const PatientIntake = () => {
         chief_complaint: formData.chief_complaint.trim(),
         triage_level: triageLevel,
         accessibility_needs: formData.accessibility_needs, // Now an array
+        accessibility_profile: (formData.accessibility_needs && formData.accessibility_needs.length > 0)
+          ? formData.accessibility_needs.join(', ')
+          : 'None',
         preferred_mode: formData.preferred_mode,
         ui_setting: uiSetting === 'large-text' ? 'Large_Text' : 
                     theme === 'high-contrast' ? 'High_Contrast' : 
