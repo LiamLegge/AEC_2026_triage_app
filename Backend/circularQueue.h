@@ -5,9 +5,12 @@
 #include "patientClass.h"
 using namespace std;
 
+template <typename T>
 class Queue{
-private:
-    patient* arr;
+
+public:
+
+    T* arr;
     int front;
     int rear;
     int capacity;
@@ -15,7 +18,7 @@ private:
 
     void resize() {
         int newCap = capacity * 2;
-        patient* newArr = new patient[newCap];
+        T* newArr = new T[newCap];
 
         // Copy elements in order
         for (int i = 0; i < count; i++)
@@ -28,24 +31,23 @@ private:
         front = 0;
         rear = count - 1;
     }
-
-public:
+    
     // Constructor
     Queue(int size = 20) {
         capacity = size;
-        arr = new patient[capacity];
+        arr = new T[capacity];
         front = 0;
         rear = -1;
         count = 0;
     }
 
     // Destructor
-    ~queue() {
+    ~Queue() {
         delete[] arr;
     }
 
-    // Add patient
-    void enqueue(patient value) {
+    // Add element
+    void push(T value) {
         if (isFull())
             resize();
 
@@ -58,10 +60,10 @@ public:
     patient dequeue() {
         if (empty()) {
             cout << "Queue empty\n";
-            return patient();
+            return T();
         }
 
-        patient temp = arr[front];
+        T temp = arr[front];
         front = (front + 1) % capacity;
         count--;
         return temp;
@@ -112,10 +114,10 @@ public:
 
 
     // Peek front
-    patient peek() {
+    T peek() {
         if (empty()) {
             cout << "Queue empty\n";
-            return patient();
+            return T();
         }
         return arr[front];
     }

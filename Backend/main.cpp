@@ -10,14 +10,13 @@
 using json = nlohmann::json;
 using namespace std;
 
-queue<patient> triageQueues[5];
+Queue<patient> triageQueues[5];
 
 void queuePatient(const patient& p) {
-    if (p.triage_level < 1 || p.triage_level > 5) {
-        // If invalid level, default to non-urgent
-        triageQueues[4].push(p);
+    if (p.Triage_Level < 1 || p.Triage_Level > 5) {
+        triageQueues[4].push(p); // default to non-urgent
     } else {
-        triageQueues[p.triage_level - 1].push(p);
+        triageQueues[p.Triage_Level - 1].push(p);
     }
 }
 
@@ -34,43 +33,41 @@ int main() {
             try {
                 json j = json::parse(req.body);
 
-                Patient p;
+                patient p;
                 p.Patient_ID = j.value("id", 0);
                 p.Name = j.value("name", "N/A");
                 p.Age = j.value("age", 0);
-                p.Birth_Day = j.value("birth_day", );
-                p.Health_Card = j.value("Health_Card", 0);
+                p.Birth_Day = j.value("birth_day", "N/A"); // FIXED
+                p.Health_Card = j.value("health_card", 0);
                 p.Chief_Complaint = j.value("chief_complaint", "N/A");
-                p.Triage_Level = j.value("triage_level", 5); // default non-urgent
+                p.Triage_Level = j.value("triage_level", 5); // FIXED
                 p.Accessibility_Profile = j.value("accessibility_profile", "None");
-                p.Prefered_Mode = j.value("preferred_mode", "Standard");
-                p.ui_setting = j.value("ui_setting", "Default");
+                p.Preferred_Mode = j.value("preferred_mode", "Standard"); // FIXED
+                p.UI_Setting = j.value("ui_setting", "Default");
                 p.Language = j.value("language", "English");
 
-                queuePatient(p); // Add to correct triage queue
+                queuePatient(p);
 
                 json res;
                 res["status"] = "success";
-                res["queue_position"] = triageQueues[p.triage_level - 1].size();
+                res["queue_position"] = triageQueues[p.Triage_Level - 1].size(); // FIXED
                 return crow::response{res.dump()};
             } catch (...) {
                 return crow::response{400, "Invalid JSON"};
             }
         }
-    );    
-    
+    );
+
     CROW_ROUTE(app, "/api/queue")(
         []() {
-            json res = json::array(); // Will hold all patients
+            json res = json::array();
 
-            // Loop from Level 1 (most urgent) to Level 5
             for (int i = 0; i < 5; i++) {
-                auto q = triageQueues[i]; // Copy queue so we don't pop original
+                auto q = triageQueues[i]; // copy so original stays intact
 
                 while (!q.empty()) {
-                    const patient& p = q.front();
+                    const patient& p = q.peek();
 
-                    // Convert Patient to JSON
                     res.push_back({
                         {"id", p.Patient_ID},
                         {"name", p.Name},
@@ -83,36 +80,35 @@ int main() {
                         {"preferred_mode", p.Preferred_Mode},
                         {"ui_setting", p.UI_Setting},
                         {"language", p.Language},
-                        {"timestamp", p.Timestamp}
                     });
 
                     q.pop();
                 }
             }
 
-            // Send JSON array back to frontend
             return crow::response{res.dump()};
         }
     );
-
 
     CROW_ROUTE(app, "/api/next_patient")(
         []() {
             for (int i = 0; i < 5; i++) {
                 if (!triageQueues[i].empty()) {
-                    const patient& p = triageQueues[i].front();
+                    const patient& p = triageQueues[i].peek();
+
                     json res = {
                         {"id", p.Patient_ID},
                         {"name", p.Name},
                         {"triage_level", p.Triage_Level}
                     };
+
                     return crow::response{res.dump()};
                 }
             }
-            return crow::response{json({}).dump()}; // empty if no patients
+
+            return crow::response{json({}).dump()}; // no patients
         }
     );
 
     app.port(8080).multithreaded().run();
 }
-

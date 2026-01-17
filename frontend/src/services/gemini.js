@@ -14,19 +14,35 @@ const genAI = new GoogleGenerativeAI(API_KEY);
  */
 export const getTriageLevel = async (chiefComplaint) => {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
     const systemPrompt = `You are an experienced emergency triage nurse following CTAS (Canadian Triage and Acuity Scale) guidelines. 
     
 Based on the patient's chief complaint, return ONLY a single integer from 1 to 5 representing the triage level:
 
-1 - Resuscitation: Immediate life-threatening conditions (cardiac arrest, severe trauma, respiratory failure)
-2 - Emergent: Potentially life-threatening conditions requiring rapid intervention (chest pain, difficulty breathing, severe allergic reaction)
-3 - Urgent: Serious conditions that require treatment within 30 minutes (moderate pain, minor trauma with bleeding, high fever)
-4 - Less Urgent: Conditions that could wait 1-2 hours (minor injuries, mild pain, minor infections)
-5 - Non-Urgent: Conditions that could wait or be seen in primary care (common cold, minor rash, prescription refills)
+1 - RESUSCITATION: Immediate life-threatening conditions requiring immediate intervention
+   Examples: cardiac arrest, severe trauma with exposed bone/organs, respiratory failure, unconsciousness, severe bleeding with shock
 
-IMPORTANT: Respond with ONLY the number (1, 2, 3, 4, or 5). No other text.`;
+2 - EMERGENT: Potentially life-threatening conditions requiring rapid intervention within minutes
+   Examples: chest pain suggestive of heart attack, difficulty breathing, severe allergic reaction with airway compromise, burns with exposed bone, major trauma
+
+3 - URGENT: Serious conditions requiring treatment within 30 minutes
+   Examples: moderate pain from injury, minor trauma with bleeding, high fever with systemic symptoms, severe pain not immediately life-threatening
+
+4 - LESS URGENT: Conditions that could wait 1-2 hours
+   Examples: minor injuries without significant bleeding, mild pain, minor infections, moderate fever
+
+5 - NON-URGENT: Conditions that could wait or be seen in primary care
+   Examples: common cold, minor rash, prescription refills, chronic conditions without acute exacerbation
+
+IMPORTANT GUIDELINES:
+- Exposed bone from burns or trauma = Level 1 or 2 (severe trauma)
+- Any mention of "bone visible", "exposed bone", "compound fracture" = high priority
+- Burns with tissue damage = Level 2 minimum
+- Pain level alone is not sufficient - consider mechanism of injury
+- When in doubt, err on the side of higher priority for potential severe injury
+
+Respond with ONLY the number (1, 2, 3, 4, or 5). No other text.`;
 
     const prompt = `${systemPrompt}
 
