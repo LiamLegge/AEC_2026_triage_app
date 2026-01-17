@@ -6,7 +6,6 @@
 #include <ctime>
 #include <algorithm>
 #include <cstdlib>
-#include "main.cpp"
 
 using namespace std;
 
@@ -20,6 +19,7 @@ string get_Current_Time(void);
 int UTC_to_Seconds(const string& temp);
 void Update_Severity(patient& p);
 void generate_email(patient& p);
+void Move_Patient(patient& p, int Target_TL);
 
 
 class patient{
@@ -65,7 +65,7 @@ class patient{
         }
 
         void set_Patient_ID(int ID){Patient_ID = ID;}
-        int get_Patient_ID(){return Patient_ID;}
+        int get_Patient_ID()const{return Patient_ID;}
 
         void set_Name(string N){Name = N;}
         string get_Name()const{return Name;}
@@ -142,7 +142,7 @@ void Update_Severity(patient& p) {
                 p.set_Triage_Level(1);
                 p.set_Internal_Time(CT);
                 generate_email(p);
-                Move_Patient(patient& p, 1);
+                Move_Patient(p, 1);
             }
             
             break;
@@ -151,7 +151,7 @@ void Update_Severity(patient& p) {
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
-                Move_Patient(patient& p, 2);
+                Move_Patient(p, 2);
             }
             break;
         case 4:
@@ -159,7 +159,7 @@ void Update_Severity(patient& p) {
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
-                Move_Patient(patient& p, 3);
+                Move_Patient(p, 3);
             }
             break;
         case 5:
@@ -167,7 +167,7 @@ void Update_Severity(patient& p) {
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
-                Move_Patient(patient& p, 4);
+                Move_Patient(p, 4);
             }
             break;
     }

@@ -123,6 +123,9 @@ void backgroundTask() {
 
 
 int main() {
+    // Load mock patient data from sample_data.txt
+    importPatientData();
+    
     crow::App<crow::CORSHandler> app;
 
     thread t(backgroundTask);
@@ -187,7 +190,7 @@ int main() {
                         {"preferred_mode", p.Preferred_Mode},
                         {"ui_setting", p.UI_Setting},
                         {"language", p.Language},
-                        {"timestamp", p.Check_In};
+                        {"timestamp", p.Timestamp}
                     });
 
                     q.dequeue();

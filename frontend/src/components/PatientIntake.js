@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { getTriageLevel, isGeminiConfigured } from '../services/gemini';
+import { getTriageLevel, isGeminiConfigured, setGeminiApiKey } from '../services/gemini';
 import { submitPatientIntake } from '../services/api';
 import { useAccessibility } from '../App';
 import VoiceInput from './VoiceInput';
@@ -44,13 +44,147 @@ const PatientIntake = () => {
   }, [showLangDropdown]);
 
   /**
+   * Parse natural language date input into ISO date format (YYYY-MM-DD)
+   * Supports various formats:
+   * - "January 15, 1990" / "Jan 15 1990" / "15 January 1990"
+   * - "1/15/1990" / "01-15-1990" / "1990-01-15"
+   * - "15th of January 1990" / "January fifteenth 1990"
+   * - Relative: "25 years ago"
+   */
+  const parseNaturalLanguageDate = (input) => {
+    if (!input || typeof input !== 'string') return '';
+    
+    const text = input.toLowerCase().trim();
+    
+    // If already in YYYY-MM-DD format, return as is
+    if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
+      return text;
+    }
+
+    // Month name mappings
+    const monthNames = {
+      january: 0, jan: 0,
+      february: 1, feb: 1,
+      march: 2, mar: 2,
+      april: 3, apr: 3,
+      may: 4,
+      june: 5, jun: 5,
+      july: 6, jul: 6,
+      august: 7, aug: 7,
+      september: 8, sept: 8, sep: 8,
+      october: 9, oct: 9,
+      november: 10, nov: 10,
+      december: 11, dec: 11
+    };
+
+    // Ordinal number mappings
+    const ordinals = {
+      first: 1, second: 2, third: 3, fourth: 4, fifth: 5,
+      sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10,
+      eleventh: 11, twelfth: 12, thirteenth: 13, fourteenth: 14, fifteenth: 15,
+      sixteenth: 16, seventeenth: 17, eighteenth: 18, nineteenth: 19, twentieth: 20,
+      'twenty-first': 21, 'twenty-second': 22, 'twenty-third': 23, 'twenty-fourth': 24,
+      'twenty-fifth': 25, 'twenty-sixth': 26, 'twenty-seventh': 27, 'twenty-eighth': 28,
+      'twenty-ninth': 29, thirtieth: 30, 'thirty-first': 31
+    };
+
+    try {
+      // Handle relative dates: "25 years ago", "30 years ago"
+      const yearsAgoMatch = text.match(/(\d+)\s*years?\s+ago/);
+      if (yearsAgoMatch) {
+        const yearsAgo = parseInt(yearsAgoMatch[1]);
+        const date = new Date();
+        date.setFullYear(date.getFullYear() - yearsAgo);
+        return date.toISOString().split('T')[0];
+      }
+
+      // Replace ordinal words with numbers
+      let processedText = text;
+      for (const [word, num] of Object.entries(ordinals)) {
+        processedText = processedText.replace(new RegExp('\\b' + word + '\\b', 'g'), num.toString());
+      }
+      
+      // Remove ordinal suffixes (1st, 2nd, 3rd, 21st, etc.)
+      processedText = processedText.replace(/(\d+)(st|nd|rd|th)/g, '$1');
+      
+      // Remove "of" and "the"
+      processedText = processedText.replace(/\b(of|the)\b/g, '');
+
+      // Pattern: "Month Day Year" or "Day Month Year" (e.g., "January 15 1990" or "15 January 1990")
+      for (const [monthName, monthNum] of Object.entries(monthNames)) {
+        // "January 15 1990" or "January 15, 1990"
+        const pattern1 = new RegExp(`\\b${monthName}\\s+(\\d{1,2})[,\\s]+(\\d{4})\\b`);
+        const match1 = processedText.match(pattern1);
+        if (match1) {
+          const day = parseInt(match1[1]);
+          const year = parseInt(match1[2]);
+          return formatDateISO(year, monthNum, day);
+        }
+        
+        // "15 January 1990"
+        const pattern2 = new RegExp(`\\b(\\d{1,2})\\s+${monthName}[,\\s]+(\\d{4})\\b`);
+        const match2 = processedText.match(pattern2);
+        if (match2) {
+          const day = parseInt(match2[1]);
+          const year = parseInt(match2[2]);
+          return formatDateISO(year, monthNum, day);
+        }
+      }
+
+      // Pattern: MM/DD/YYYY, M/D/YYYY, MM-DD-YYYY, etc.
+      const slashPattern = /\b(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})\b/;
+      const slashMatch = processedText.match(slashPattern);
+      if (slashMatch) {
+        const month = parseInt(slashMatch[1]) - 1; // 0-indexed
+        const day = parseInt(slashMatch[2]);
+        const year = parseInt(slashMatch[3]);
+        return formatDateISO(year, month, day);
+      }
+
+      // Pattern: YYYY/MM/DD or YYYY-MM-DD
+      const isoPattern = /\b(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})\b/;
+      const isoMatch = processedText.match(isoPattern);
+      if (isoMatch) {
+        const year = parseInt(isoMatch[1]);
+        const month = parseInt(isoMatch[2]) - 1; // 0-indexed
+        const day = parseInt(isoMatch[3]);
+        return formatDateISO(year, month, day);
+      }
+
+      // If no pattern matched but we can parse as date
+      const parsed = new Date(input);
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toISOString().split('T')[0];
+      }
+
+      return ''; // Could not parse
+    } catch (error) {
+      console.error('Date parsing error:', error);
+      return '';
+    }
+  };
+
+  /**
+   * Helper to format date as ISO string
+   */
+  const formatDateISO = (year, month, day) => {
+    const date = new Date(year, month, day);
+    if (isNaN(date.getTime())) return '';
+    
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  };
+
+  /**
    * Sanitize email for safe shell usage
    * Removes/escapes characters that could be used for injection attacks
    * Only allows: alphanumeric, @, ., -, _, +
    */
   const sanitizeEmail = (email) => {
     if (!email) return '';
-    // Only allow safe email characters
+    // Only allow safe email characters - periods are explicitly allowed
     // Remove any character that's not alphanumeric, @, ., -, _, +
     const sanitized = email
       .toLowerCase()
@@ -58,10 +192,10 @@ const PatientIntake = () => {
       .replace(/[^a-z0-9@.\-_+]/g, '')
       // Prevent multiple @ symbols
       .replace(/@+/g, '@')
-      // Prevent consecutive dots
+      // Prevent consecutive dots (but single dots are fine)
       .replace(/\.{2,}/g, '.')
-      // Remove leading/trailing dots and dashes
-      .replace(/^[.\-]+|[.\-]+$/g, '');
+      // Only remove leading dots/dashes, NOT trailing (to allow typing "john." before "doe")
+      .replace(/^[.\-]+/g, '');
     return sanitized;
   };
 
@@ -81,6 +215,7 @@ const PatientIntake = () => {
   const [triageLevel, setTriageLevel] = useState(null);
   const [submitResult, setSubmitResult] = useState(null);
   const [error, setError] = useState(null);
+  const [geminiConfigured, setGeminiConfigured] = useState(isGeminiConfigured());
   const [currentStep, setCurrentStep] = useState(1); // Multi-step form for iPad
   const [showScanner, setShowScanner] = useState(false); // Health card scanner modal
   
@@ -163,9 +298,20 @@ const PatientIntake = () => {
       processedValue = formatHealthCard(value);
     }
     
-    // Sanitize email as user types
+    // Sanitize email as user types (periods are allowed)
     if (name === 'email') {
       processedValue = sanitizeEmail(value);
+    }
+    
+    // Parse natural language date for birth_day
+    if (name === 'birth_day') {
+      // If it's not already in date format, try to parse natural language
+      if (value && !value.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        const parsed = parseNaturalLanguageDate(value);
+        if (parsed) {
+          processedValue = parsed;
+        }
+      }
     }
 
     // Update global language when form language changes
@@ -228,6 +374,25 @@ const PatientIntake = () => {
     }));
   }, []);
 
+  // Handle voice input for date of birth
+  const handleDOBVoice = useCallback((transcript) => {
+    // Parse natural language date from voice input
+    const parsedDate = parseNaturalLanguageDate(transcript);
+    if (parsedDate) {
+      setFormData(prev => ({
+        ...prev,
+        birth_day: parsedDate,
+      }));
+      // Provide audio feedback - parse manually to avoid timezone issues
+      const [year, month, day] = parsedDate.split('-').map(Number);
+      const date = new Date(year, month - 1, day); // month is 0-indexed in Date constructor
+      const formatted = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+      speak(`Date of birth set to ${formatted}`);
+    } else {
+      speak('Sorry, I could not understand that date. Please try again or type it manually.');
+    }
+  }, [speak]);
+
   // Handle health card scan result (includes DOB extraction)
   const handleHealthCardScan = useCallback((scannedData) => {
     setFormData(prev => ({
@@ -272,6 +437,13 @@ const PatientIntake = () => {
     } finally {
       setIsCalculatingTriage(false);
     }
+  };
+
+  const handleSetGeminiKey = () => {
+    const key = window.prompt('Enter Gemini API key');
+    if (!key || !key.trim()) return;
+    setGeminiApiKey(key.trim());
+    setGeminiConfigured(isGeminiConfigured());
   };
 
   // Submit patient to backend
@@ -573,9 +745,18 @@ const PatientIntake = () => {
         )}
 
         {/* Gemini API Status */}
-        {!isGeminiConfigured() && currentStep === 2 && (
+        {!geminiConfigured && currentStep === 2 && (
           <div className="alert alert-warning" role="alert">
             {t('usingAutoAssessment')}
+            <div style={{ marginTop: '8px' }}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={handleSetGeminiKey}
+              >
+                Set Gemini API key
+              </button>
+            </div>
           </div>
         )}
 
@@ -713,23 +894,32 @@ const PatientIntake = () => {
                       label="Read field instructions"
                     />
                   </div>
-                  <input
-                    type="date"
-                    id="birth_day"
-                    name="birth_day"
-                    value={formData.birth_day}
-                    onChange={handleChange}
-                    required
-                    className="large-input"
-                    max={new Date().toISOString().split('T')[0]}
-                  />
+                  <div className="input-with-voice">
+                    <input
+                      type="date"
+                      id="birth_day"
+                      name="birth_day"
+                      value={formData.birth_day}
+                      onChange={handleChange}
+                      required
+                      className="large-input"
+                      max={new Date().toISOString().split('T')[0]}
+                      placeholder="YYYY-MM-DD or say 'January 15, 1990'"
+                    />
+                    <VoiceInputUniversal
+                      onTranscript={handleDOBVoice}
+                      inputType="date"
+                      size="medium"
+                      label="Speak your date of birth"
+                    />
+                  </div>
                   {formData.birth_day && (
                     <small className="input-help">
                       {t('age')}: {calculateAge(formData.birth_day)} {t('ageYearsOld')}
                     </small>
                   )}
                   <small className="input-help">
-                    {t('dobTip')}
+                    💡 Say "January 15, 1990" or "15th of January 1990" or "25 years ago" or type manually
                   </small>
                 </div>
 
