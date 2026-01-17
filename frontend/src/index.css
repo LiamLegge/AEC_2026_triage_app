@@ -45,6 +45,22 @@
   --danger-color: #ff0000;
 }
 
+/* Dark Mode Theme */
+[data-theme="dark-mode"] {
+  --primary-color: #2563eb;
+  --primary-hover: #1d4ed8;
+  --secondary-color: #64748b;
+  --success-color: #22c55e;
+  --warning-color: #f59e0b;
+  --danger-color: #ef4444;
+  --background-color: #000000;
+  --card-background: #000000;
+  --text-primary: #ffffff;
+  --text-secondary: #64748b;
+  --border-color: #e2e8f0;
+  --input-background: #000000;
+}
+
 /* Large Text Theme */
 [data-ui="large-text"] {
   --font-size-base: 20px;

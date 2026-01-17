@@ -16,12 +16,20 @@ function App() {
     setTheme(prev => prev === 'high-contrast' ? 'default' : 'high-contrast');
   };
 
+  const toggleDarkMode = () => { 
+    setTheme(prev => prev === 'dark-mode' ? 'default' : 'dark-mode');
+  }
+
   const toggleLargeText = () => {
     setUiSetting(prev => prev === 'large-text' ? 'default' : 'large-text');
   };
 
+  const toggleLanguage = () => {
+    setLanguage(prev => prev === 'default' ? 'next-language' : 'default');
+  }
+
   return (
-    <AccessibilityContext.Provider value={{ theme, uiSetting, toggleHighContrast, toggleLargeText }}>
+    <AccessibilityContext.Provider value={{ theme, uiSetting, toggleHighContrast, toggleLargeText, toggleLanguage}}>
       <Router>
         <div 
           className="app-container"
@@ -35,6 +43,7 @@ function App() {
           <Header 
             toggleHighContrast={toggleHighContrast}
             toggleLargeText={toggleLargeText}
+            toggleLanguage={toggleLanguage}
             theme={theme}
             uiSetting={uiSetting}
           />
@@ -58,7 +67,7 @@ function Header({ toggleHighContrast, toggleLargeText, theme, uiSetting }) {
   return (
     <header className="header" role="banner">
       <div className="header-content">
-        <h1>🏥 Accessible Triage System</h1>
+        <h1>Accessible Triage System</h1>
         
         <nav className="nav-links" role="navigation" aria-label="Main navigation">
           <Link 
