@@ -160,6 +160,7 @@ body {
 }
 
 /* Accessibility Controls */
+.access
 .accessibility-controls {
   display: flex;
   gap: var(--spacing-sm);

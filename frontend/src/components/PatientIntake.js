@@ -946,31 +946,12 @@ const PatientIntake = () => {
           z-index: 1; 
           top: 1; 
           right: 0;
-          background-color: #424242; 
+          background-color: #8b8b8b; 
           overflow-x: hidden;
           padding-top: 10px;
-        }
-
-        .accessibility-quick-bar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: var(--spacing-md);
-          padding: var(--spacing-md);
-          background: var(--card-background);
-          border-radius: 12px;
-          margin-bottom: var(--spacing-md);
-          flex-wrap: wrap;
-          border: 2px solid var(--border-color);
-        }
-
-        .accessibility-quick-sidebar .quick-bar-vis {
-          padding: 6px 8px 6px 16px;
-          text-decoration: none;
-          font-size: 25px;
-          color: #f1f1f1;
-          display: block;
-        }
+          padding-left: 7.5px;
+          opacity: 0.8;
+        } 
 
         .quick-access-btn {
           width: 140px;
@@ -986,7 +967,7 @@ const PatientIntake = () => {
           border-radius: 8px;
           border: 2px solid var(--primary-color);
           background: opaque;
-          color: #565656;
+          color: #000000;
           font-size: 16px;
           cursor: pointer;
           transition: all 0.15s;
