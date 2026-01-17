@@ -10,6 +10,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 using json = nlohmann::json;
 using namespace std;
@@ -28,7 +30,7 @@ void queuePatient(const patient& p) {
 
 void Move_Patient(patient& p, int Target_TL){
     triageQueues[Target_TL].removePatient(p);
-    triagesQueues[Target_TL-1].push(p);
+    triageQueues[Target_TL-1].push(p);
 }
 
 //scanPatient Sourced from chatGPT
@@ -103,9 +105,28 @@ void importPatientData(){
     }
 }
 
+void check_triages(){
+    for(int i = 0; i < 5; i++){
+        for(int n = 0; n < triageQueues[i].size(); n++){
+            Update_Severity(triageQueues[i].arr[n]);
+        }
+    }
+}
+
+void backgroundTask() {
+    while (true) {
+        this_thread::sleep_for(chrono::minutes(30));
+        check_triages();
+    }
+}
+
+
 
 int main() {
     crow::App<crow::CORSHandler> app;
+
+    thread t(backgroundTask);
+    t.detach();
 
     auto& cors = app.get_middleware<crow::CORSHandler>();
     cors.global()

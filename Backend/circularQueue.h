@@ -180,6 +180,10 @@ public:
             cout << arr[(front + i) % capacity].get_Name() << " ";
         cout << endl;
     }
+
+    patient patient_number(int n){
+        
+    }
 };
 
 
