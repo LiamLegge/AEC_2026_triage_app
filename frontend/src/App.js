@@ -13,6 +13,7 @@ export const useAccessibility = () => useContext(AccessibilityContext);
 
 function App() {
   // Theme and accessibility UI state — AI-assisted coding directed by Jackson Chambers.
+  // This portion was created by Liam Legge
   const [theme, setTheme] = useState('default'); // 'default' or 'high-contrast'
   const [uiSetting, setUiSetting] = useState('default'); // 'default' or 'large-text'
   const [language, setLanguage] = useState('English'); // Current UI language
@@ -31,6 +32,8 @@ function App() {
   const toggleLargeText = () => {
     setUiSetting(prev => prev === 'large-text' ? 'default' : 'large-text');
   };
+  // Up to this portion
+
 
   // Cycle through languages or set a specific language — AI-assisted coding directed by Jackson Chambers.
   const toggleLanguage = (specificLang) => {

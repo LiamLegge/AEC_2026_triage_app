@@ -31,7 +31,9 @@
   --spacing-xl: 32px;
 }
 
-/* High Contrast Theme — AI-assisted coding directed by Jackson Chambers. */
+/* These themes were created by Liam Legge */
+
+/* High Contrast Theme */
 [data-theme="high-contrast"] {
   --primary-color: #0000ff;
   --primary-hover: #0000cc;
@@ -71,6 +73,7 @@
   --spacing-md: 20px;
   --spacing-lg: 32px;
 }
+/* Up to this portion*/
 
 /* Global Reset — AI-assisted coding directed by Jackson Chambers. */
 *, *::before, *::after {

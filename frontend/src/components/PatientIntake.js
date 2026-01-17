@@ -508,6 +508,7 @@ const PatientIntake = () => {
           ? formData.accessibility_needs.join(', ')
           : 'None',
         preferred_mode: formData.preferred_mode,
+        /* UI settings added by Liam Legge */
         ui_setting: uiSetting === 'large-text' ? 'Large_Text' : 
                     theme === 'high-contrast' ? 'High_Contrast' : 
                     theme === 'dark-mode' ? 'Dark_Mode' : 'Standard',
@@ -630,6 +631,7 @@ const PatientIntake = () => {
   };
 
   return (
+    /* The buttons and sidebar was coded by Liam Legge, Language selector was added later via AI */
     <div className="patient-intake tablet-optimized">
       {/* Accessibility Quick Actions - Always visible on iPad */}
       <div className="accessibility-quick-sidebar">
@@ -658,10 +660,11 @@ const PatientIntake = () => {
           onClick={toggleLargeText}
           aria-pressed={uiSetting === 'large-text'}
           title={t('largerButtons')}
-        >
+        > 
           {t('largerButtons')}
-        </button>
+        </button> 
         
+
         {/* Language Selector in Sidebar */}
         <div className="sidebar-language-selector" ref={langDropdownRef}>
           <button
@@ -1347,7 +1350,7 @@ const PatientIntake = () => {
           font-size: 0.9em;
           color: var(--text-secondary);
         }
-        
+         /* This portion was coded by Liam Legge */
          /* Fixed sidebar accessibility quick actions */
         .accessibility-quick-sidebar {
           height: 50%; 
@@ -1390,6 +1393,7 @@ const PatientIntake = () => {
           color: white;
           border-color: var(--primary-color);
         }
+        /* Up to this portion */
 
         /* Sidebar Language Selector */
         .sidebar-language-selector {
