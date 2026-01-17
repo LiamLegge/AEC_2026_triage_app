@@ -21,6 +21,11 @@ void queuePatient(const patient& p) {
     }
 }
 
+void Move_Patient(patient& p, int Target_TL){
+    triageQueues[Target_TL].removePatient(p);
+    triagesQueues[Target_TL-1].push(p);
+}
+
 int main() {
     crow::SimpleApp app;
 

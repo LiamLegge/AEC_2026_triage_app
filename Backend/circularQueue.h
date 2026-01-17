@@ -54,7 +54,7 @@ public:
         count++;
     }
 
-    // Remove patient
+    // Remove front patient
     patient dequeue() {
         if (empty()) {
             cout << "Queue empty\n";
@@ -66,6 +66,50 @@ public:
         count--;
         return temp;
     }
+
+    //removePatient function from chatGPT
+    void removePatient(const patient& target) {
+        if (count == 0) {
+            cout << "Queue empty\n";
+            return;
+        }
+
+        int i = front;
+        bool found = false;
+
+        // Search for the patient by unique ID
+        for (int c = 0; c < count; c++) {
+            if (arr[i].get_Patient_ID() == target.get_Patient_ID()) {
+                found = true;
+                break;
+            }
+            i = (i + 1) % capacity;
+        }
+
+        if (!found) {
+            cout << "Patient not found in queue\n";
+            return;
+        }
+
+        // Shift elements to remove patient
+        int j = i;
+        while (j != rear) {
+            int next = (j + 1) % capacity;
+            arr[j] = arr[next];
+            j = next;
+        }
+
+        // Update rear and count
+        if (rear == 0)
+            rear = capacity - 1;
+        else
+            rear = (rear - 1) % capacity;
+
+        count--;
+        cout << "Patient removed successfully\n";
+    }
+
+
 
     // Peek front
     patient peek() {
@@ -103,5 +147,7 @@ public:
         cout << endl;
     }
 };
+
+
 
 #endif

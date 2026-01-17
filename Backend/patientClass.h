@@ -6,6 +6,7 @@
 #include <ctime>
 #include <algorithm>
 #include <cstdlib>
+#include "main.cpp"
 
 using namespace std;
 
@@ -136,13 +137,16 @@ void Update_Severity(patient& p) {
                 p.set_Triage_Level(1);
                 p.set_Internal_Time(CT);
                 generate_email(p);
+                Move_Patient(patient& p, 1);
             }
+            
             break;
         case 3:
             if (IT + 5400 <= CT) { // 1.5 hours
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
+                Move_Patient(patient& p, 2);
             }
             break;
         case 4:
@@ -150,6 +154,7 @@ void Update_Severity(patient& p) {
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
+                Move_Patient(patient& p, 3);
             }
             break;
         case 5:
@@ -157,6 +162,7 @@ void Update_Severity(patient& p) {
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
+                Move_Patient(patient& p, 4);
             }
             break;
     }
