@@ -14,6 +14,7 @@ JSON
   "name": "Aisha Al-Fayed",
   "age": 34,
   "health_card": "1234-32-123-PW"
+  "birth_day": "2005-06-06"
   "chief_complaint": "Severe Chest Pain",
   "triage_level": 2,
   "accessibility_profile": "None",
