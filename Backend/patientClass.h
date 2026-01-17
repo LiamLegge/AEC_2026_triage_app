@@ -13,6 +13,7 @@ class patient{
         unsigned int Patient_ID;
         string Name;
         unsigned int Age;
+        char Sex;
         string Birth_Day;
         string Health_Card;
         string Chief_Complaint;
@@ -22,18 +23,15 @@ class patient{
         string UI_Setting;
         string Language;
         string Check_In;
+        int Internal_Time;
 
     public:
-        patient(int ID = 0, string N = "John Doe", int A = 0,string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English", ){
-            //get current time
-            time_t Now = time(nullptr);
-            string CT = ctime(&Now);
-            if (!CT.empty() && CT.back() == '\n') {//remove trailing \n
-                CT.pop_back();
-            }
+        patient(int ID = 0, string N = "John Doe", int A = 0, char S = 'X', string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English"){
+
             Patient_ID = ID;
             Name = N;
             Age = A;
+            Sex = S;
             Birth_Day = BD;
             Health_Card = HC;
             Chief_Complaint = CC;
@@ -42,7 +40,8 @@ class patient{
             Prefered_Mode = PM;
             UI_Setting = UI;
             Language = Lang;
-            Check_In = CT; // format: Fri Jan 17 10:52:30 2026
+            Check_In = get_Current_Time(); // format: Fri Jan 17 10:52:30 2026
+            Internal_Time = get_Current_Time();
         }
 
         void set_Patient_ID(int ID){Patient_ID = ID;}
@@ -53,6 +52,9 @@ class patient{
 
         void set_Age(int A){Age = A;}
         int get_Age(){return Age;}
+
+        void set_Sex(char S){Sex = S;}
+        char get_Sex(){return Sex;}
 
         void set_Birth_Day(string BD){Birth_Day = BD;}
         string get_Birth_Day(){return Birth_Day;}
@@ -79,15 +81,58 @@ class patient{
         string get_Language(){return Language;}
 
         string get_Check_In_Full(){return Check_In;}
-        int get_Check_In_Time(){
-            string temp = Check_In;
-            temp = temp.substr(11, 8);
-            temp.erase(remove(temp.begin(), temp.end(), ':'), temp.end());
-            int tempi = stoi(temp);
-            return tempi;
-        }
+        int get_Check_In_Time(){return UTC_to_int(Check_In);}
+
+        void set_Internal_Time(int T){Internal_Time = T;}
         
 };
+string get_Current_Time(void){
+        //get current time
+    time_t Now = time(nullptr);
+    string CT = ctime(&Now);
+    if (!CT.empty() && CT.back() == '\n') {//remove trailing \n
+        CT.pop_back();
+    }
+    return CT;
+}
+
+int UTC_to_int(string temp){
+    temp = temp.substr(11, 8);
+    temp.erase(remove(temp.begin(), temp.end(), ':'), temp.end());
+    int tempi = stoi(temp);
+    return tempi;
+}
+
+void Update_Sevarity(patient p){
+    int CT = p.get_Current_Time();
+    int IT = p.get_Internal_Time();
+    //increase sevarity based on time waiting
+    switch(p.get_Triage_Level()){
+        Case 1:
+            return; // no need to update
+        Case 2:
+            //Update after an hour of waiting
+            if(IT >= CT +  10000){
+                p.set_Triage_Level(1);
+                p.set_Internal_Time(CT);
+            }
+        Case 3://Update after an 1.5 hours of waiting
+            if(IT >= CT +  13000){
+                p.set_Triage_Level(2);
+                p.set_Internal_Time(CT);
+            }
+        Case 4://Update after an 2 hours of waiting
+            if(IT >= CT +  20000){
+                p.set_Triage_Level(2);
+                p.set_Internal_Time(CT);
+            }
+        Case 5://Update after an 2.5 hours of waiting
+            if(IT >= CT +  23000){
+                p.set_Triage_Level(2);
+                p.set_Internal_Time(CT);
+            }
+    }
+}
 
 
 #endif
