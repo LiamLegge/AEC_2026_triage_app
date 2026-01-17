@@ -385,10 +385,10 @@ const identifyDOB = (text, allDates) => {
   // Sort dates by year
   const sorted = [...allDates].sort((a, b) => a.year - b.year);
   
-  // If we only have one date and it's labeled as DOB, use it
-  if (allDates.length === 1) {
-    console.log('Only one date found, using it:', sorted[0].date);
-    return correctAndValidateDate(sorted[0]);
+  // Require at least three dates (DOB, issue, expiry) before selecting DOB
+  if (allDates.length < 3) {
+    console.log('Not enough dates found (need 3). Waiting for more scans.');
+    return null;
   }
   
   // Strategy 1: Use explicit labels first

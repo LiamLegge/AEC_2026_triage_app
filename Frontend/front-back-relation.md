@@ -23,7 +23,7 @@ JSON
   "preferred_mode": "Standard",
   "ui_setting": "Default",
   "language": "English",
-  "timestamp": 1705492800 //Fri Jan 17 10:52:30 2026
+  "timestamp": "Fri Jan 17 10:52:30 2026"
 }
 triage_level (int): 1 (Resuscitation) to 5 (Non-Urgent).
 

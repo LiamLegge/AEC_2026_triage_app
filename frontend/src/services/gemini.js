@@ -1,9 +1,22 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 // Initialize Gemini API - Replace with your actual API key
-const API_KEY = process.env.REACT_APP_GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY';
+const DEFAULT_API_KEY = process.env.REACT_APP_GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY';
+const LOCAL_STORAGE_KEY = 'GEMINI_API_KEY';
 
-const genAI = new GoogleGenerativeAI(API_KEY);
+const getStoredApiKey = () => {
+  if (typeof window === 'undefined' || !window.localStorage) return '';
+  return window.localStorage.getItem(LOCAL_STORAGE_KEY) || '';
+};
+
+const getApiKey = () => {
+  return getStoredApiKey() || DEFAULT_API_KEY;
+};
+
+const getGenAI = () => {
+  const apiKey = getApiKey();
+  return new GoogleGenerativeAI(apiKey);
+};
 
 /**
  * Get triage level from Gemini AI based on patient's chief complaint
@@ -19,7 +32,8 @@ export const getTriageLevel = async (chiefComplaint) => {
       return fallbackTriageAssessment(chiefComplaint);
     }
 
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    const genAI = getGenAI();
+    const model = genAI.getGenerativeModel({ model: 'gemini-3-flash-preview' });
 
     const systemPrompt = `You are an experienced emergency triage nurse following CTAS (Canadian Triage and Acuity Scale) guidelines. 
     
@@ -120,10 +134,18 @@ const fallbackTriageAssessment = (complaint) => {
  * @returns {boolean}
  */
 export const isGeminiConfigured = () => {
-  return API_KEY && API_KEY !== 'YOUR_GEMINI_API_KEY';
+  const apiKey = getApiKey();
+  return apiKey && apiKey !== 'YOUR_GEMINI_API_KEY';
+};
+
+export const setGeminiApiKey = (apiKey) => {
+  if (typeof window === 'undefined' || !window.localStorage) return;
+  if (!apiKey) return;
+  window.localStorage.setItem(LOCAL_STORAGE_KEY, apiKey);
 };
 
 export default {
   getTriageLevel,
   isGeminiConfigured,
+  setGeminiApiKey,
 };

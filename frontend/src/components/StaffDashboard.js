@@ -106,24 +106,38 @@ const StaffDashboard = () => {
     return info[level] || { label: 'Unknown', color: '', priority: 'N/A' };
   };
 
+  const getArrivalDate = (patient) => {
+    const raw = patient?.timestamp ?? patient?.check_in;
+    if (raw == null) return null;
+
+    if (typeof raw === 'number') {
+      return new Date(raw < 10000000000 ? raw * 1000 : raw);
+    }
+
+    if (typeof raw === 'string') {
+      const parsed = new Date(raw);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    return null;
+  };
+
   // Format timestamp
-  const formatTime = (timestamp) => {
-    const date = new Date(typeof timestamp === 'number' && timestamp < 10000000000 
-      ? timestamp * 1000 
-      : timestamp);
-    return date.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
+  const formatTime = (patient) => {
+    const date = getArrivalDate(patient);
+    if (!date) return '—';
+    return date.toLocaleTimeString('en-US', {
+      hour: '2-digit',
       minute: '2-digit'
     });
   };
 
   // Calculate wait time
-  const getWaitTime = (timestamp) => {
+  const getWaitTime = (patient) => {
     const now = Date.now();
-    const arrival = typeof timestamp === 'number' && timestamp < 10000000000 
-      ? timestamp * 1000 
-      : timestamp;
-    const diffMs = now - arrival;
+    const arrivalDate = getArrivalDate(patient);
+    if (!arrivalDate) return '—';
+    const diffMs = now - arrivalDate.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     
     if (diffMins < 1) return 'Just arrived';
@@ -375,10 +389,10 @@ const StaffDashboard = () => {
                           color: patient.triage_level <= 2 ? 'var(--danger-color)' : 'inherit',
                           fontWeight: patient.triage_level <= 2 ? 600 : 400
                         }}>
-                          {getWaitTime(patient.timestamp)}
+                          {getWaitTime(patient)}
                         </span>
                       </td>
-                      <td>{formatTime(patient.timestamp)}</td>
+                      <td>{formatTime(patient)}</td>
                     </tr>
                   );
                 })}

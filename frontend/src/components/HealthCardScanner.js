@@ -235,7 +235,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     <div className="scanner-overlay">
       <div className="scanner-modal">
         <div className="scanner-header">
-          <h3>📷 Scan Ontario Health Card</h3>
+          <h3>📷 Scan Health Card</h3>
           <button 
             className="scanner-close" 
             onClick={() => { stopCamera(); onClose(); }}

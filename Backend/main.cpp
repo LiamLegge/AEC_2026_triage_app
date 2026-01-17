@@ -28,7 +28,7 @@ void queuePatient(const patient& p) {
 
 void Move_Patient(patient& p, int Target_TL){
     triageQueues[Target_TL].removePatient(p);
-    triagesQueues[Target_TL-1].push(p);
+    triageQueues[Target_TL-1].push(p);
 }
 
 //scanPatient Sourced from chatGPT
@@ -105,6 +105,9 @@ void importPatientData(){
 
 
 int main() {
+    // Load mock patient data from sample_data.txt
+    importPatientData();
+    
     crow::App<crow::CORSHandler> app;
 
     auto& cors = app.get_middleware<crow::CORSHandler>();
@@ -166,7 +169,7 @@ int main() {
                         {"preferred_mode", p.Preferred_Mode},
                         {"ui_setting", p.UI_Setting},
                         {"language", p.Language},
-                        {"timestamp", p.Check_In};
+                        {"timestamp", p.Timestamp}
                     });
 
                     q.dequeue();
