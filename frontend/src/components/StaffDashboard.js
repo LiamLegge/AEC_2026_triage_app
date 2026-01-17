@@ -1,13 +1,37 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getPatientQueue } from '../services/api';
 
+const STAFF_PASSWORD = 'ctrlaltelite';
+
 const StaffDashboard = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
   const [patients, setPatients] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isPolling, setIsPolling] = useState(true);
   const intervalRef = useRef(null);
+
+  // Handle password submission
+  const handlePasswordSubmit = (e) => {
+    e.preventDefault();
+    if (passwordInput === STAFF_PASSWORD) {
+      setIsAuthenticated(true);
+      setPasswordError('');
+    } else {
+      setPasswordError('Incorrect password. Please try again.');
+      setPasswordInput('');
+    }
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setPasswordInput('');
+    setPasswordError('');
+  };
 
   // Fetch patient queue data
   const fetchQueue = useCallback(async () => {
@@ -108,6 +132,54 @@ const StaffDashboard = () => {
 
   const stats = getQueueStats();
 
+  // Login Screen
+  if (!isAuthenticated) {
+    return (
+      <div className="staff-dashboard">
+        <div className="card" style={{ maxWidth: '400px', margin: '100px auto', textAlign: 'center' }}>
+          <h2 style={{ marginBottom: '24px' }}>🔒 Staff Login</h2>
+          <p style={{ color: 'var(--text-secondary)', marginBottom: '24px' }}>
+            Please enter the staff password to access the dashboard.
+          </p>
+          
+          <form onSubmit={handlePasswordSubmit}>
+            <div style={{ marginBottom: '16px' }}>
+              <input
+                type="password"
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                placeholder="Enter password"
+                style={{
+                  width: '100%',
+                  padding: '12px 16px',
+                  fontSize: '16px',
+                  border: '2px solid #ddd',
+                  borderRadius: '8px',
+                  boxSizing: 'border-box'
+                }}
+                autoFocus
+              />
+            </div>
+            
+            {passwordError && (
+              <p style={{ color: 'var(--danger-color)', marginBottom: '16px', fontSize: '14px' }}>
+                {passwordError}
+              </p>
+            )}
+            
+            <button
+              type="submit"
+              className="btn btn-primary"
+              style={{ width: '100%', padding: '12px' }}
+            >
+              Login
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="staff-dashboard">
       {/* Dashboard Header */}
@@ -150,6 +222,13 @@ const StaffDashboard = () => {
               disabled={isLoading}
             >
               🔄 Refresh
+            </button>
+            <button 
+              className="btn btn-outline" 
+              onClick={handleLogout}
+              style={{ marginLeft: '8px' }}
+            >
+              🚪 Logout
             </button>
           </div>
         </div>
