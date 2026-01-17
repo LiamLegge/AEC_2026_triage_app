@@ -6,6 +6,9 @@
 #include "crow/json.hpp"
 
 #include <string>
+#include <fstream>
+#include <sstream>
+#include <vector>
 
 using json = nlohmann::json;
 using namespace std;
@@ -25,7 +28,81 @@ void Move_Patient(patient& p, int Target_TL){
     triagesQueues[Target_TL-1].push(p);
 }
 
+//scanPatient Sourced from chatGPT
+patient scanPatient(const string& line) {
+    patient p;
+    stringstream ss(line);
+    string field;
+
+    // Patient_ID
+    getline(ss, field, ',');
+    p.Patient_ID = stoi(field);
+
+    // Name
+    getline(ss, p.Name, ',');
+
+    // Age
+    getline(ss, field, ',');
+    p.Age = stoi(field);
+
+    // Sex
+    getline(ss, field, ',');
+    p.Sex = field.empty() ? 'X' : field[0];
+
+    // Email
+    getline(ss, p.Email, ',');
+
+    // Birth_Day
+    getline(ss, p.Birth_Day, ',');
+
+    // Chief_Complaint
+    getline(ss, p.Chief_Complaint, ',');
+
+    // Health_Card
+    getline(ss, p.Health_Card, ',');
+
+    // Triage_Level
+    getline(ss, field, ',');
+    p.Triage_Level = stoi(field);
+
+    // Accessibility_Profile
+    getline(ss, p.Accessibility_Profile, ',');
+
+    // Preferred_Mode
+    getline(ss, p.Preferred_Mode, ',');
+
+    // UI_Setting
+    getline(ss, p.UI_Setting, ',');
+
+    // Language
+    getline(ss, p.Language, ',');
+
+    return p;
+}
+
+
+void importPatientData(){
+    patient temp;
+
+    ifstream sampleData("sample_data.txt");
+    if (!sampleData.is_open()) {
+        std::cerr << "Failed to open file\n";
+        return;
+    }
+    string line; 
+    getline(sampleData, line);//skip header
+
+    while(getline(sampleData, line)){
+        if(!line.empty()){
+            temp = scanPatient(line);
+            triageQueues[temp.Triage_Level-1].push(temp);
+        }
+    }
+}
+
+
 int main() {
+    //importPatientData();
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/api/intake").methods("POST"_method)(

@@ -1,0 +1,51 @@
+Patient_ID,Name,Age,Sex,Email,Birthday,Chief_Complaint,Health_Card,Triage_Level,Accessibility_Profile,Preferred_Mode,UI_Setting,Language
+1001,Aisha Al-Fayed,34,F,aisha.alfayed@example.com,1991-03-12,Severe Chest Pain,8459201734,2,None,Standard,Default,English
+1002,Liam O'Connor,22,M,liam.oconnor@example.com,2003-07-19,Sprained Wrist,1293847560,4,Visual Impairment,Voice_Input,Screen_Reader,English
+1003,Santiago Rivera,58,M,santiago.rivera@example.com,1967-02-08,Shortness of Breath,9038475612,2,None,Standard,Default,Spanish
+1004,Chen Wei,71,F,chen.wei@example.com,1954-11-23,Dizziness and Nausea,5647382910,3,Hearing Impairment,Text_Visuals,Captions_Enabled,Mandarin
+1005,Priya Patel,29,F,priya.patel@example.com,1996-05-04,Migraine Headache,3849201765,3,Light Sensitivity,Dark_Mode,Low_Brightness,English
+1006,Marcus Johnson,45,M,marcus.johnson@example.com,1980-09-14,Prescription Refill,7583920146,5,None,Standard,Default,English
+1007,Elena Sokolov,62,F,elena.sokolov@example.com,1963-01-30,Hip Pain after Fall,9483726150,3,Mobility/Dexterity,Voice_Command,Large_Buttons,Russian
+1008,Fatima Hassan,19,F,fatima.hassan@example.com,2006-04-22,Sore Throat,2039485761,5,None,Standard,Default,Arabic
+1009,John Smith,50,M,john.smith@example.com,1975-12-01,Hypertension Check,5647389201,4,Low Vision,Text_to_Speech,High_Contrast,English
+1010,Keiko Tanaka,82,F,keiko.tanaka@example.com,1943-06-17,Confusion/Disorientation,8492017364,2,Cognitive,Simple_View,Simplified_UI,Japanese
+1011,David Kim,27,M,david.kim@example.com,1998-10-09,Deep Laceration on Hand,3748291056,3,None,Standard,Default,English
+1012,Maria Gonzalez,35,F,maria.gonzalez@example.com,1990-08-25,Abdominal Pain,9483720156,3,None,Standard,Default,Spanish
+1013,Samuel Abioye,41,M,samuel.abioye@example.com,1984-02-11,Asthma Attack,2039487156,2,None,Standard,Default,Yoruba
+1014,Emily Chen,6,F,emily.chen@example.com,2019-03-05,High Fever,5647382917,3,None (Pediatric),Standard,Default,English
+1015,Lars Jensen,75,M,lars.jensen@example.com,1950-09-29,Stroke Symptoms,9483726159,1,Motor Impairment,Eye_Tracking,Large_Touch_Target,Danish
+1016,Isabella Rossi,31,F,isabella.rossi@example.com,1994-01-18,Mild Rash,3849201759,5,None,Standard,Default,Italian
+1017,Kwame Mensah,53,M,kwame.mensah@example.com,1972-04-07,Back Pain,2039485769,4,None,Standard,Default,Twi
+1018,Sarah Miller,24,F,sarah.miller@example.com,2001-11-12,Anxiety Attack,5647389207,3,Neurodivergent,Text_Only,Calm_Colors,English
+1019,Miguel Torres,40,M,miguel.torres@example.com,1985-05-21,Broken Leg,9483726102,3,Mobility,Voice_Input,Hands_Free,Spanish
+1020,Amara Singh,66,F,amara.singh@example.com,1959-07-03,Chest Tightness,3849201788,2,Visual Impairment,Voice_Conversation,Screen_Reader,Punjabi
+1021,Lucas Silva,21,M,lucas.silva@example.com,2004-02-16,Annual Physical Inquiry,2039485723,5,None,Standard,Default,Portuguese
+1022,Hana Lee,28,F,hana.lee@example.com,1997-06-11,Allergic Reaction,5647382914,2,Hearing Impairment,Text_Chat,Flash_Alerts,Korean
+1023,Robert Fox,88,M,robert.fox@example.com,1937-10-02,General Weakness,9483726188,4,Low Vision,Voice_Output,Extra_Large_Text,English
+1024,Jasmine Brooks,33,F,jasmine.brooks@example.com,1992-12-20,Insomnia,3849201793,5,None,Standard,Default,English
+1025,Omar Farooq,47,M,omar.farooq@example.com,1978-03-14,Kidney Stone Pain,2039485781,2,None,Standard,Default,Urdu
+1026,Natalia Kowalski,55,F,natalia.kowalski@example.com,1970-09-08,Joint Swelling,5647382919,4,Dexterity Issues,Voice_Command,Button_Spacing,Polish
+1027,Thanh Nguyen,60,M,thanh.nguyen@example.com,1965-01-27,Cough and Fever,9483726133,3,None,Standard,Default,Vietnamese
+1028,Grace O'Malley,12,F,grace.omalley@example.com,2013-05-30,Ear Infection,3849201762,4,None,Standard,Default,English
+1029,Diego Fernandez,26,M,diego.fernandez@example.com,1999-04-02,Fractured Finger,2039485799,4,Color Blindness,Standard,Color_Blind_Mode,Spanish
+1030,Mohammed Ali,70,M,mohammed.ali@example.com,1955-08-19,Diabetes Management,5647382902,4,Visual Impairment,Audio_Guide,Screen_Reader,Arabic
+1031,Sophie Dubois,38,F,sophie.dubois@example.com,1987-02-14,Panic Attack,9483726177,3,Sensory Processing,Text_Based,Minimalist_UI,French
+1032,Rajesh Kumar,49,M,rajesh.kumar@example.com,1976-06-09,Heart Palpitations,3849201781,2,None,Standard,Default,Hindi
+1033,Anita Baker,64,F,anita.baker@example.com,1961-03-22,Arthritis Flare-up,2039485744,4,Mobility/Dexterity,Voice_Input,Hands_Free,English
+1034,Vladimir Ivanov,52,M,vladimir.ivanov@example.com,1973-11-05,Severe Burn,5647382911,2,None,Standard,Default,Russian
+1035,Chloe Wilson,23,F,chloe.wilson@example.com,2002-09-17,Urinary Tract Infection,9483726107,4,None,Standard,Default,English
+1036,Mateo Garcia,7,M,mateo.garcia@example.com,2018-12-01,Cut on Forehead,3849201704,3,None (Pediatric),Standard,Default,Spanish
+1037,Femi Adebayo,36,M,femi.adebayo@example.com,1989-07-28,Food Poisoning,2039485788,3,None,Standard,Default,English
+1038,Yuki Sato,25,F,yuki.sato@example.com,2000-10-15,Sprained Ankle,5647382928,4,Hearing Impairment,Sign_Language_Video,Visual_Cues,Japanese
+1039,Benjamin Cohen,74,M,benjamin.cohen@example.com,1951-01-03,Pneumonia Symptoms,9483726199,2,None,Standard,Default,English
+1040,Zara Khan,29,F,zara.khan@example.com,1996-04-18,Pregnant - Labor Pains,3849201711,2,None,Standard,Default,Urdu
+1041,Carlos Mendez,44,M,carlos.mendez@example.com,1981-08-12,Tooth Abscess,2039485772,4,None,Standard,Default,Spanish
+1042,Lila Gupta,59,F,lila.gupta@example.com,1966-02-27,Vision Blurring,5647382933,3,Visual Impairment,Voice_Only,High_Contrast,Hindi
+1043,Arthur Pendelton,80,M,arthur.pendelton@example.com,1945-05-06,Fall - Head Trauma,9483726122,2,Cognitive/Dementia,Simple_Voice,Simplified_UI,English
+1044,Nia Thomas,30,F,nia.thomas@example.com,1995-09-14,Insect Bite,3849201799,5,None,Standard,Default,English
+1045,Wei Zhang,42,M,wei.zhang@example.com,1983-12-22,Gastrointestinal Bleed,2039485733,2,None,Standard,Default,Mandarin
+1046,Olivia Brown,20,F,olivia.brown@example.com,2005-06-01,Medication Side Effects,5647382944,4,None,Standard,Default,English
+1047,Hassan El-Amir,51,M,hassan.elamir@example.com,1974-03-09,Chronic Back Pain,9483726181,4,None,Standard,Default,Arabic
+1048,Julia Santos,32,F,julia.santos@example.com,1993-10-28,Dehydration,3849201784,3,None,Standard,Default,Portuguese
+1049,Elias Petros,67,M,elias.petros@example.com,1958-01-19,Chest Discomfort,2039485791,2,Hearing Impairment,Text_Visuals,Captions_Enabled,Greek
+1050,Karen White,48,F,karen.white@example.com,1977-07-25,Routine Check-up Info,5647382950,5,None,Standard,Default,English
