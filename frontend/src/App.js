@@ -74,25 +74,6 @@ function Header({ toggleHighContrast, toggleLargeText, theme, uiSetting }) {
             Staff Dashboard
           </Link>
         </nav>
-
-        <div className="accessibility-controls" role="group" aria-label="Accessibility options">
-          <button
-            className={`accessibility-btn ${theme === 'high-contrast' ? 'active' : ''}`}
-            onClick={toggleHighContrast}
-            aria-pressed={theme === 'high-contrast'}
-            title="Toggle high contrast mode"
-          >
-            🔲 High Contrast
-          </button>
-          <button
-            className={`accessibility-btn ${uiSetting === 'large-text' ? 'active' : ''}`}
-            onClick={toggleLargeText}
-            aria-pressed={uiSetting === 'large-text'}
-            title="Toggle large text mode"
-          >
-            🔤 Large Text
-          </button>
-        </div>
       </div>
     </header>
   );
