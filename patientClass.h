@@ -58,7 +58,7 @@ class patient{
 
         void set_Language(string Lang){Language = Lang;}
         string get_Language(){return Language;}
-
-
 };
+
+
 #endif
