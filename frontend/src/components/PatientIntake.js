@@ -1159,6 +1159,15 @@ const PatientIntake = () => {
           padding-top: 10px;
         }
 
+        .quick-sidebar-label {
+          font-weight: bold;
+          font-size: 18px;
+          color: #ffffff;
+          display: block;
+          text-align: center;
+          margin-bottom: 10px;
+        }
+
         .accessibility-quick-bar {
           display: flex;
           align-items: center;
