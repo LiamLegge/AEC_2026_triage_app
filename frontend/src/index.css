@@ -30,6 +30,8 @@
   --spacing-xl: 32px;
 }
 
+/* These themes were created by Liam Legge */
+
 /* High Contrast Theme */
 [data-theme="high-contrast"] {
   --primary-color: #0000ff;
@@ -70,6 +72,7 @@
   --spacing-md: 20px;
   --spacing-lg: 32px;
 }
+/* Up to this portion*/
 
 /* Global Reset */
 *, *::before, *::after {

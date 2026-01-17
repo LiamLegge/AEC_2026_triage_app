@@ -10,6 +10,7 @@ export const AccessibilityContext = createContext();
 export const useAccessibility = () => useContext(AccessibilityContext);
 
 function App() {
+  // This portion was created by Liam Legge
   const [theme, setTheme] = useState('default'); // 'default' or 'high-contrast'
   const [uiSetting, setUiSetting] = useState('default'); // 'default' or 'large-text'
   const [language, setLanguage] = useState('English'); // Current UI language
@@ -25,6 +26,8 @@ function App() {
   const toggleLargeText = () => {
     setUiSetting(prev => prev === 'large-text' ? 'default' : 'large-text');
   };
+  // Up to this portion
+
 
   // Cycle through languages or set specific language
   const toggleLanguage = (specificLang) => {
