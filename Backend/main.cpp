@@ -115,7 +115,7 @@ void check_triages(){
 
 void backgroundTask() {
     while (true) {
-        this_thread::sleep_for(chrono::minutes(30));
+        this_thread::sleep_for(chrono::minutes(25));
         check_triages();
     }
 }
