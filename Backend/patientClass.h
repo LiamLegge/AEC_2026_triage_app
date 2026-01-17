@@ -15,8 +15,8 @@ const string Admin_Password = "password123";
 bool validate_email(const string& email);
 string get_Current_Time(void);
 int UTC_to_int(string temp);
-void Update_Sevarity(patient p);
-void generate_email(patient& p)
+void Update_Sevarity(patient& p);
+void generate_email(patient& p);
 
 
 class patient{
@@ -120,7 +120,7 @@ int UTC_to_int(string temp){
     return tempi;
 }
 
-void Update_Sevarity(patient p){
+void Update_Sevarity(patient& p){
     int CT = p.get_Current_Time();
     int IT = p.get_Internal_Time();
     //increase sevarity based on time waiting
