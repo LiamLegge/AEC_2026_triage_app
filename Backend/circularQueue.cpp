@@ -11,7 +11,7 @@ private:
 
     void resize() {
         int newCap = capacity * 2;
-        int* newArr = new int[newCap];
+        patient* newArr = new patient[newCap];
 
         // Copy elements in order
         for (int i = 0; i < count; i++)
@@ -27,9 +27,9 @@ private:
 
 public:
     // Constructor
-    queue(int size = 4) {
+    queue(int size = 20) {
         capacity = size;
-        arr = new int[capacity];
+        arr = new patient[capacity];
         front = 0;
         rear = -1;
         count = 0;
@@ -40,32 +40,34 @@ public:
         delete[] arr;
     }
 
-    // Add element
-    void enqueue(int value) {
+    // Add patient
+    void enqueue(patient value) {
         if (isFull())
             resize();
 
         rear = (rear + 1) % capacity;
-        arr[rear] = value;
+        arr[rear] = value;   // OBJECT COPY
         count++;
     }
 
-    // Remove element
-    void dequeue() {
+    // Remove patient
+    patient dequeue() {
         if (isEmpty()) {
             cout << "Queue empty\n";
-            return;
+            return patient();
         }
 
+        patient temp = arr[front];
         front = (front + 1) % capacity;
         count--;
+        return temp;
     }
 
     // Peek front
-    int peek() {
+    patient peek() {
         if (isEmpty()) {
             cout << "Queue empty\n";
-            return -1;
+            return patient();
         }
         return arr[front];
     }
@@ -84,7 +86,7 @@ public:
 
     void display() {
         for (int i = 0; i < count; i++)
-            cout << arr[(front + i) % capacity] << " ";
+            cout << arr[(front + i) % capacity].name << " ";
         cout << endl;
     }
 };
