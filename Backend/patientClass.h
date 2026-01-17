@@ -12,10 +12,12 @@ using namespace std;
 const string Admin_Email = "hospital_email@domain.ca";
 const string Admin_Password = "password123";
 
+class patient; 
+
 bool validate_email(const string& email);
 string get_Current_Time(void);
-int UTC_to_int(string temp);
-void Update_Sevarity(patient& p);
+int UTC_to_Seconds(const string& temp)
+void Update_Severity(patient& p);
 void generate_email(patient& p);
 
 
@@ -38,13 +40,14 @@ class patient{
         int Internal_Time;
 
     public:
-        patient(int ID = 0, string N = "John Doe", int A = 0, char S = 'X',string E = "NULL", string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English"){
+        patient(int ID = 0, string N = "John Doe", int A = 0, char S = 'X',string E = "NULL", string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Standard", string UI = "Default", string Lang = "English"){
 
             Patient_ID = ID;
             Name = N;
             Age = A;
             Sex = S;
             if(validate_email(E)){Email = E;}//check for dangerous emails
+            else{Email = "NULL";}
             Birth_Day = BD;
             Health_Card = HC;
             Chief_Complaint = CC;
@@ -54,7 +57,7 @@ class patient{
             UI_Setting = UI;
             Language = Lang;
             Check_In = get_Current_Time(); // format: Fri Jan 17 10:52:30 2026
-            Internal_Time = UTC_to_int(get_Current_Time());
+            Internal_Time = UTC_to_Seconds(get_Current_Time()); //seconds past midnight
         }
 
         void set_Patient_ID(int ID){Patient_ID = ID;}
@@ -97,7 +100,7 @@ class patient{
         string get_Language()const{return Language;}
 
         string get_Check_In_Full(){return Check_In;}
-        int get_Check_In_Time()const{return UTC_to_int(Check_In);}
+        int get_Check_In_Time()const{return UTC_to_Seconds(Check_In);}
 
         void set_Internal_Time(int T){Internal_Time = T;}
         int get_Internal_Time()const{return Internal_Time;}
@@ -113,45 +116,49 @@ string get_Current_Time(void){
     return CT;
 }
 
-int UTC_to_int(string temp){
-    temp = temp.substr(11, 8);
-    temp.erase(remove(temp.begin(), temp.end(), ':'), temp.end());
-    int tempi = stoi(temp);
-    return tempi;
+int UTC_to_Seconds(const string& temp){
+    string timePart = temp.substr(11, 8);
+    int h = stoi(timePart.substr(0, 2));
+    int m = stoi(timePart.substr(3, 2));
+    int s = stoi(timePart.substr(6, 2));
+    return h * 3600 + m * 60 + s;
 }
 
-void Update_Sevarity(patient& p){
-    int CT = p.get_Current_Time();
+void Update_Severity(patient& p) {
+    int CT = UTC_to_seconds(get_Current_Time());
     int IT = p.get_Internal_Time();
-    //increase sevarity based on time waiting
-    switch(p.get_Triage_Level()){
+
+    switch (p.get_Triage_Level()) {
         case 1:
-            return; // no need to update
+            return; // no update needed
         case 2:
-            //Update after an hour of waiting
-            if(IT >= CT +  10000){
+            if (IT + 3600 <= CT) { // 1 hour wait
                 p.set_Triage_Level(1);
                 p.set_Internal_Time(CT);
                 generate_email(p);
             }
-        case 3://Update after an 1.5 hours of waiting
-            if(IT >= CT +  13000){
+            break;
+        case 3:
+            if (IT + 5400 <= CT) { // 1.5 hours
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
             }
-        case 4://Update after an 2 hours of waiting
-            if(IT >= CT +  20000){
+            break;
+        case 4:
+            if (IT + 7200 <= CT) { // 2 hours
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
             }
-        case 5://Update after an 2.5 hours of waiting
-            if(IT >= CT +  23000){
+            break;
+        case 5:
+            if (IT + 9000 <= CT) { // 2.5 hours
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
                 generate_email(p);
             }
+            break;
     }
 }
 
@@ -160,10 +167,8 @@ bool validate_email(const string& email) {
     if (email.empty() || email.length() > 254) return false;
 
     for (char c : email) {
-        if (!isalnum(c) &&
-            c != '@' && c != '.' && c != '_' &&
-            c != '%' && c != '+' && c != '-') {
-            return false; // Reject dangerous characters
+        if (!isalnum(c) && c != '@' && c != '.' && c != '_' && c != '%' && c != '+' && c != '-') {
+            return false;
         }
     }
 
