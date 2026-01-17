@@ -16,13 +16,15 @@ class patient;
 
 bool validate_email(const string& email);
 string get_Current_Time(void);
-int UTC_to_Seconds(const string& temp)
+int UTC_to_Seconds(const string& temp);
 void Update_Severity(patient& p);
 void generate_email(patient& p);
 
 
 class patient{
-    private:
+
+    public:
+
         unsigned int Patient_ID;
         string Name;
         unsigned int Age;
@@ -31,15 +33,14 @@ class patient{
         string Health_Card;
         string Email;
         string Chief_Complaint;
-        unsigned int Triage_Level;
         string Accessibility_Profile;
         string Preferred_Mode;
         string UI_Setting;
         string Language;
         string Check_In;
         int Internal_Time;
+        unsigned int Triage_Level;
 
-    public:
         patient(int ID = 0, string N = "John Doe", int A = 0, char S = 'X',string E = "NULL", string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Standard", string UI = "Default", string Lang = "English"){
 
             Patient_ID = ID;
@@ -125,7 +126,7 @@ int UTC_to_Seconds(const string& temp){
 }
 
 void Update_Severity(patient& p) {
-    int CT = UTC_to_seconds(get_Current_Time());
+    int CT = UTC_to_Seconds(get_Current_Time());
     int IT = p.get_Internal_Time();
 
     switch (p.get_Triage_Level()) {
