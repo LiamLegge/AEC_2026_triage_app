@@ -7,7 +7,7 @@ echo ==========================================
 echo.
 echo [1/2] Starting C++ Backend Server...
 if exist "Backend\server.exe" (
-    start "Triage Backend Server" "Backend\server.exe"
+    start "Triage Backend Server" /D "Backend" "server.exe"
     echo    Backend started in a new window.
 ) else (
     echo    ERROR: Backend executable not found at Backend\server.exe

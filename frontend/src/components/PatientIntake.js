@@ -919,7 +919,7 @@ const PatientIntake = () => {
                     </small>
                   )}
                   <small className="input-help">
-                    💡 Say "January 15, 1990" or "15th of January 1990" or "25 years ago" or type manually
+                    {t('dobVoiceHint')}
                   </small>
                 </div>
 
@@ -1229,10 +1229,10 @@ const PatientIntake = () => {
         <button 
           type="button" 
           className="help-button"
-          onClick={() => alert('Please ask a staff member for assistance.')}
-          aria-label="Get help from staff"
+          onClick={() => alert(t('needHelpAlert'))}
+          aria-label={t('needHelpAriaLabel')}
         >
-          🙋 Need Help?
+          {t('needHelpButton')}
         </button>
       </div>
 
@@ -1352,7 +1352,7 @@ const PatientIntake = () => {
           top: 1; 
           right: 0;
           background-color: #8b8b8b; 
-          overflow-x: hidden;
+          overflow: visible;
           padding-top: 10px;
           padding-left: 7.5px;
           opacity: 0.8;
@@ -1393,6 +1393,7 @@ const PatientIntake = () => {
           margin-top: 16px;
           padding-top: 16px;
           border-top: 1px solid #666;
+          overflow: visible;
         }
 
         .language-toggle-btn {

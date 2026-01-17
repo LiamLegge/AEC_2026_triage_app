@@ -86,10 +86,11 @@ patient scanPatient(const string& line) {
 
 void importPatientData(){
     patient temp;
+    int count = 0;
 
     ifstream sampleData("sample_data.txt");
     if (!sampleData.is_open()) {
-        std::cerr << "Failed to open file\n";
+        std::cerr << "Failed to open sample_data.txt - make sure to run server from Backend directory\n";
         return;
     }
     string line; 
@@ -99,8 +100,10 @@ void importPatientData(){
         if(!line.empty()){
             temp = scanPatient(line);
             triageQueues[temp.Triage_Level-1].push(temp);
+            count++;
         }
     }
+    std::cout << "Loaded " << count << " patients from sample_data.txt\n";
 }
 
 
