@@ -26,6 +26,7 @@ JSON
 triage_level (int): 1 (Resuscitation) to 5 (Non-Urgent).
 
 Note: Lower number = Higher Priority.
+Note: Check in time will be done on backend, is in format: Fri Jan 17 10:52:30 2026
 
 accessibility_profile (string): e.g., "Visual Impairment", "Hearing Impairment", "Mobility".
 
