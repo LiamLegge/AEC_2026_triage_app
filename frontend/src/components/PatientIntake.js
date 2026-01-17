@@ -3,9 +3,13 @@ import { getTriageLevel, isGeminiConfigured } from '../services/gemini';
 import { submitPatientIntake } from '../services/api';
 import { useAccessibility } from '../App';
 import VoiceInput from './VoiceInput';
+import TextToSpeech, { useTTS } from './TextToSpeech';
+import VoiceInputUniversal from './VoiceInputUniversal';
+import HealthCardScanner from './HealthCardScanner';
 
 const PatientIntake = () => {
-  const { theme, uiSetting, language, toggleHighContrast, toggleDarkMode, toggleLargeText, toggleLanguage } = useAccessibility();
+  const { theme, uiSetting, toggleHighContrast, toggleDarkMode, toggleLargeText } = useAccessibility();
+  const { speak, stop, isSpeaking } = useTTS();
   
   // Form state with new fields
   const [formData, setFormData] = useState({
@@ -25,6 +29,7 @@ const PatientIntake = () => {
   const [submitResult, setSubmitResult] = useState(null);
   const [error, setError] = useState(null);
   const [currentStep, setCurrentStep] = useState(1); // Multi-step form for iPad
+  const [showScanner, setShowScanner] = useState(false); // Health card scanner modal
   
   const complaintRef = useRef(null);
 
@@ -55,10 +60,6 @@ const PatientIntake = () => {
       detectedProfile = detectedProfile === 'None' ? 'Low Vision' : detectedProfile;
       detectedMode = 'Touch';
     }
-    if(Language === 'next-language'){
-      detectedProfile = 'Language Assistance';
-      detectedMode = 'Touch';
-    }
 
     setFormData(prev => ({
       ...prev,
@@ -67,15 +68,15 @@ const PatientIntake = () => {
     }));
   }, [theme, uiSetting]);
 
-  // Format health card input (####-##-###-XX)
+  // Format health card input (####-###-###-XX)
   const formatHealthCard = (value) => {
     // Remove all non-alphanumeric characters
     const cleaned = value.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
     
-    // Apply format: ####-##-###-XX
+    // Apply format: ####-###-###-XX (4-3-3-2 = 12 chars + 3 dashes = 15 total)
     let formatted = '';
     for (let i = 0; i < cleaned.length && i < 12; i++) {
-      if (i === 4 || i === 6 || i === 9) {
+      if (i === 4 || i === 7 || i === 10) {
         formatted += '-';
       }
       formatted += cleaned[i];
@@ -85,8 +86,8 @@ const PatientIntake = () => {
 
   // Validate health card format
   const isValidHealthCard = (card) => {
-    // Format: ####-##-###-XX (4 digits, 2 digits, 3 digits, 2 letters)
-    const pattern = /^\d{4}-\d{2}-\d{3}-[A-Z]{2}$/;
+    // Format: ####-###-###-XX (4 digits, 3 digits, 3 digits, 2 letters PW or MK)
+    const pattern = /^\d{4}-\d{3}-\d{3}-(PW|MK)$/;
     return pattern.test(card);
   };
 
@@ -120,6 +121,43 @@ const PatientIntake = () => {
     }));
     setTriageLevel(null);
   }, []);
+
+  // Handle voice input for name
+  const handleNameVoice = useCallback((transcript) => {
+    setFormData(prev => ({
+      ...prev,
+      name: transcript,
+    }));
+  }, []);
+
+  // Handle voice input for health card
+  const handleHealthCardVoice = useCallback((healthCard) => {
+    setFormData(prev => ({
+      ...prev,
+      health_card: healthCard,
+    }));
+  }, []);
+
+  // Handle health card scan result (includes DOB extraction)
+  const handleHealthCardScan = useCallback((scannedData) => {
+    setFormData(prev => ({
+      ...prev,
+      health_card: scannedData.healthCard || prev.health_card,
+      birth_day: scannedData.birthDay || prev.birth_day,
+    }));
+    setShowScanner(false);
+    // Announce success
+    const parts = [];
+    if (scannedData.healthCard) parts.push(`Health card: ${scannedData.healthCard.split('').join(' ')}`);
+    if (scannedData.birthDay) parts.push(`Date of birth detected`);
+    speak(`Scan complete. ${parts.join('. ')}`);
+  }, [speak]);
+
+  // TTS helper to read field labels and values
+  const speakField = (label, value) => {
+    const text = value ? `${label}: ${value}` : label;
+    speak(text);
+  };
 
   // Calculate triage level using Gemini
   const calculateTriage = async () => {
@@ -195,7 +233,7 @@ const PatientIntake = () => {
         accessibility_profile: formData.accessibility_profile,
         preferred_mode: formData.preferred_mode,
         ui_setting: uiSetting === 'large-text' ? 'Large_Text' : 
-                    theme === 'high-contrast' ? 'High_Contrast' : 'Default',
+                    theme === 'high-contrast' ? 'High_Contrast' : 
                     theme === 'dark-mode' ? 'Dark_Mode' : 'Default',
         language: formData.language,
         timestamp: Math.floor(Date.now() / 1000),
@@ -318,9 +356,6 @@ const PatientIntake = () => {
         </button>
         <button
           type="button"
-          className={`quick-access-btn ${languages === 'large-text' ? 'active' : ''}`}
-          onClick={toggleLanguage}
-          aria-pressed={languages === 'next-language'}
           title="Toggle large text"
         >
           Languages
@@ -382,46 +417,94 @@ const PatientIntake = () => {
                 <legend className="step-legend">Step 1: Your Information</legend>
                 
                 <div className="form-group">
-                  <label htmlFor="name" className="large-label">
-                    Full Name <span className="required">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    required
-                    className="large-input"
-                    placeholder="Enter your full name"
-                    autoComplete="name"
-                    autoFocus
-                  />
+                  <div className="label-with-tts">
+                    <label htmlFor="name" className="large-label">
+                      Full Name <span className="required">*</span>
+                    </label>
+                    <TextToSpeech 
+                      text="Full Name. Please enter your first and last name."
+                      size="small"
+                      label="Read field instructions"
+                    />
+                  </div>
+                  <div className="input-with-voice">
+                    <input
+                      type="text"
+                      id="name"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      className="large-input"
+                      placeholder="Enter your full name"
+                      autoComplete="name"
+                      autoFocus
+                    />
+                    <VoiceInputUniversal
+                      onTranscript={handleNameVoice}
+                      inputType="name"
+                      size="medium"
+                      label="Speak your name"
+                    />
+                  </div>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="health_card" className="large-label">
-                    Health Card Number <span className="required">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    id="health_card"
-                    name="health_card"
-                    value={formData.health_card}
-                    onChange={handleChange}
-                    required
-                    className="large-input mono-input"
-                    placeholder="####-##-###-XX"
-                    maxLength="14"
-                    inputMode="text"
-                  />
-                  <small className="input-help">Format: 1234-56-789-AB</small>
+                  <div className="label-with-tts">
+                    <label htmlFor="health_card" className="large-label">
+                      Health Card Number <span className="required">*</span>
+                    </label>
+                    <TextToSpeech 
+                      text="Health Card Number. Format is 4 digits, dash, 2 digits, dash, 3 digits, dash, 2 letters. Example: 1234-56-789-AB. You can speak the numbers or use the camera to scan your card."
+                      size="small"
+                      label="Read field instructions"
+                    />
+                  </div>
+                  <div className="input-with-actions">
+                    <input
+                      type="text"
+                      id="health_card"
+                      name="health_card"
+                      value={formData.health_card}
+                      onChange={handleChange}
+                      required
+                      className="large-input mono-input"
+                      placeholder="####-##-###-XX"
+                      maxLength="14"
+                      inputMode="text"
+                    />
+                    <div className="input-action-buttons">
+                      <VoiceInputUniversal
+                        onTranscript={handleHealthCardVoice}
+                        inputType="healthcard"
+                        size="medium"
+                        label="Speak health card number"
+                      />
+                      <button
+                        type="button"
+                        className="scan-btn"
+                        onClick={() => setShowScanner(true)}
+                        aria-label="Scan health card with camera"
+                        title="Use camera to scan your health card"
+                      >
+                        📷
+                      </button>
+                    </div>
+                  </div>
+                  <small className="input-help">Format: 1234-56-789-AB • Say numbers or scan your card</small>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="birth_day" className="large-label">
-                    Date of Birth <span className="required">*</span>
-                  </label>
+                  <div className="label-with-tts">
+                    <label htmlFor="birth_day" className="large-label">
+                      Date of Birth <span className="required">*</span>
+                    </label>
+                    <TextToSpeech 
+                      text="Date of Birth. This will be automatically filled when you scan your health card, or you can select a date manually."
+                      size="small"
+                      label="Read field instructions"
+                    />
+                  </div>
                   <input
                     type="date"
                     id="birth_day"
@@ -437,10 +520,20 @@ const PatientIntake = () => {
                       Age: {calculateAge(formData.birth_day)} years old
                     </small>
                   )}
+                  <small className="input-help">
+                    💡 Tip: Scan your health card above to auto-fill this field
+                  </small>
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="language" className="large-label">Preferred Language</label>
+                  <div className="label-with-tts">
+                    <label htmlFor="language" className="large-label">Preferred Language</label>
+                    <TextToSpeech 
+                      text="Preferred Language. Select the language you are most comfortable with."
+                      size="small"
+                      label="Read field instructions"
+                    />
+                  </div>
                   <select
                     id="language"
                     name="language"
@@ -473,9 +566,16 @@ const PatientIntake = () => {
                 <legend className="step-legend">Step 2: What brings you in today?</legend>
                 
                 <div className="form-group">
-                  <label htmlFor="chief_complaint" className="large-label">
-                    Describe your symptoms <span className="required">*</span>
-                  </label>
+                  <div className="label-with-tts">
+                    <label htmlFor="chief_complaint" className="large-label">
+                      Describe your symptoms <span className="required">*</span>
+                    </label>
+                    <TextToSpeech 
+                      text="Describe your symptoms. Tell us what's wrong. You can type or tap the microphone to speak. Be as detailed as possible about your pain, how long you've had it, and any other symptoms."
+                      size="small"
+                      label="Read field instructions"
+                    />
+                  </div>
                   <div className="complaint-input-wrapper">
                     <textarea
                       ref={complaintRef}
@@ -496,6 +596,16 @@ const PatientIntake = () => {
                   <small className="input-help">
                     💡 Tip: Tap the microphone to speak instead of typing
                   </small>
+                  {formData.chief_complaint && (
+                    <div className="read-back-section">
+                      <TextToSpeech 
+                        text={`Your symptoms: ${formData.chief_complaint}`}
+                        size="small"
+                        label="Read back what I entered"
+                      />
+                      <span className="read-back-label">Listen to your entry</span>
+                    </div>
+                  )}
                 </div>
 
                 {/* Calculate triage button */}
@@ -527,6 +637,11 @@ const PatientIntake = () => {
                       </span>
                       <p>{getTriageLevelInfo(triageLevel).description}</p>
                     </div>
+                    <TextToSpeech 
+                      text={`Your triage level is ${triageLevel}, ${getTriageLevelInfo(triageLevel).label}. ${getTriageLevelInfo(triageLevel).description}`}
+                      size="medium"
+                      label="Read triage result"
+                    />
                   </div>
                 )}
 
@@ -713,6 +828,14 @@ const PatientIntake = () => {
         </button>
       </div>
 
+      {/* Health Card Scanner Modal */}
+      {showScanner && (
+        <HealthCardScanner
+          onScan={handleHealthCardScan}
+          onClose={() => setShowScanner(false)}
+        />
+      )}
+
       {/* Tablet-optimized styles */}
       <style>{`
         .sr-only {
@@ -733,6 +856,7 @@ const PatientIntake = () => {
           padding: var(--spacing-md);
         }
 
+<<<<<<< Updated upstream
         /* Fixed sidebar accessibility quick actions */
         .accessibility-quick-sidebar {
           height: 50%; 
@@ -744,6 +868,97 @@ const PatientIntake = () => {
           background-color: #ffffff; 
           overflow-x: hidden;
           padding-top: 10px;
+=======
+        /* Label with TTS button */
+        .label-with-tts {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
+          margin-bottom: var(--spacing-sm);
+        }
+
+        .label-with-tts .large-label {
+          margin-bottom: 0;
+        }
+
+        /* Input with voice button */
+        .input-with-voice {
+          display: flex;
+          gap: var(--spacing-sm);
+          align-items: stretch;
+        }
+
+        .input-with-voice .large-input {
+          flex: 1;
+        }
+
+        /* Input with multiple action buttons (voice + camera) */
+        .input-with-actions {
+          display: flex;
+          gap: var(--spacing-sm);
+          align-items: stretch;
+        }
+
+        .input-with-actions .large-input {
+          flex: 1;
+        }
+
+        .input-action-buttons {
+          display: flex;
+          gap: var(--spacing-xs);
+        }
+
+        /* Scan button for health card */
+        .scan-btn {
+          width: 60px;
+          background: var(--secondary-color);
+          border: 2px solid var(--border-color);
+          border-radius: 12px;
+          font-size: 24px;
+          cursor: pointer;
+          transition: all 0.2s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+
+        .scan-btn:hover {
+          background: var(--primary-color);
+          border-color: var(--primary-color);
+        }
+
+        .scan-btn:active {
+          transform: scale(0.95);
+        }
+
+        /* Read-back section for symptoms */
+        .read-back-section {
+          display: flex;
+          align-items: center;
+          gap: var(--spacing-sm);
+          margin-top: var(--spacing-sm);
+          padding: var(--spacing-sm);
+          background: var(--background-color);
+          border-radius: 8px;
+        }
+
+        .read-back-label {
+          font-size: 0.9em;
+          color: var(--text-secondary);
+        }
+
+        .accessibility-quick-bar {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--spacing-md);
+          padding: var(--spacing-md);
+          background: var(--card-background);
+          border-radius: 12px;
+          margin-bottom: var(--spacing-md);
+          flex-wrap: wrap;
+          border: 2px solid var(--border-color);
+>>>>>>> Stashed changes
         }
 
         .accessibility-quick-sidebar .quick-bar-vis {
