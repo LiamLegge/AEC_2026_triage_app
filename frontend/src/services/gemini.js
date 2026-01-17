@@ -14,6 +14,11 @@ const genAI = new GoogleGenerativeAI(API_KEY);
  */
 export const getTriageLevel = async (chiefComplaint) => {
   try {
+    if (!isGeminiConfigured()) {
+      console.warn('Gemini API key not configured. Using fallback assessment.');
+      return fallbackTriageAssessment(chiefComplaint);
+    }
+
     const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
 
     const systemPrompt = `You are an experienced emergency triage nurse following CTAS (Canadian Triage and Acuity Scale) guidelines. 

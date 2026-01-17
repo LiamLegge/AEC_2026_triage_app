@@ -41,6 +41,38 @@ public:
         count = 0;
     }
 
+    // Copy constructor (deep copy)
+    Queue(const Queue& other) {
+        capacity = other.capacity;
+        arr = new T[capacity];
+        front = other.front;
+        rear = other.rear;
+        count = other.count;
+
+        for (int i = 0; i < capacity; i++) {
+            arr[i] = other.arr[i];
+        }
+    }
+
+    // Copy assignment operator (deep copy)
+    Queue& operator=(const Queue& other) {
+        if (this == &other) return *this;
+
+        delete[] arr;
+
+        capacity = other.capacity;
+        arr = new T[capacity];
+        front = other.front;
+        rear = other.rear;
+        count = other.count;
+
+        for (int i = 0; i < capacity; i++) {
+            arr[i] = other.arr[i];
+        }
+
+        return *this;
+    }
+
     // Destructor
     ~Queue() {
         delete[] arr;

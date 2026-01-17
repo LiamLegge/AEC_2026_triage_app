@@ -327,6 +327,9 @@ const PatientIntake = () => {
         chief_complaint: formData.chief_complaint.trim(),
         triage_level: triageLevel,
         accessibility_needs: formData.accessibility_needs, // Now an array
+        accessibility_profile: (formData.accessibility_needs && formData.accessibility_needs.length > 0)
+          ? formData.accessibility_needs.join(', ')
+          : 'None',
         preferred_mode: formData.preferred_mode,
         ui_setting: uiSetting === 'large-text' ? 'Large_Text' : 
                     theme === 'high-contrast' ? 'High_Contrast' : 
@@ -345,7 +348,11 @@ const PatientIntake = () => {
       }, 8000);
       
     } catch (err) {
-      setError(t('failedToRegister'));
+      // Show more specific error message
+      const errorMessage = err.message && err.message.includes('Backend')
+        ? 'Backend server not available. Please ensure the server is running on port 8080.'
+        : t('failedToRegister');
+      setError(errorMessage);
       console.error(err);
     } finally {
       setIsSubmitting(false);
