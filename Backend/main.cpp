@@ -21,6 +21,11 @@ void queuePatient(const patient& p) {
     }
 }
 
+void Move_Patient(patient& p, int Target_TL){
+    triageQueues[Target_TL].removePatient(p);
+    triagesQueues[Target_TL-1].push(p);
+}
+
 int main() {
     crow::App<crow::CORSHandler> app;
 
@@ -82,8 +87,7 @@ int main() {
                         {"preferred_mode", p.Preferred_Mode},
                         {"ui_setting", p.UI_Setting},
                         {"language", p.Language},
-                        {"check_in", p.Check_In},
-                        {"timestamp", p.get_Timestamp()},
+                        {"timestamp", p.Check_In};
                     });
 
                     q.dequeue();
