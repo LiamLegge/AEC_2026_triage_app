@@ -12,7 +12,7 @@ using namespace std;
 
 queue<patient> triageQueues[5];
 
-void queuePatient(const Patient& p) {
+void queuePatient(const patient& p) {
     if (p.triage_level < 1 || p.triage_level > 5) {
         // If invalid level, default to non-urgent
         triageQueues[4].push(p);
@@ -63,7 +63,7 @@ int main() {
                 auto q = triageQueues[i]; // Copy queue so we don't pop original
 
                 while (!q.empty()) {
-                    const Patient& p = q.front();
+                    const patient& p = q.front();
 
                     // Convert Patient to JSON
                     res.push_back({
@@ -95,7 +95,7 @@ int main() {
         []() {
             for (int i = 0; i < 5; i++) {
                 if (!triageQueues[i].empty()) {
-                    const Patient& p = triageQueues[i].front();
+                    const patient& p = triageQueues[i].front();
                     json res = {
                         {"id", p.Patient_ID},
                         {"name", p.Name},
