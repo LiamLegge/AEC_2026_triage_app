@@ -24,7 +24,7 @@ class patient{
         string Chief_Complaint;
         unsigned int Triage_Level;
         string Accessibility_Profile;
-        string Prefered_Mode;
+        string Preferred_Mode;
         string UI_Setting;
         string Language;
         string Check_In;
@@ -43,7 +43,7 @@ class patient{
             Chief_Complaint = CC;
             Triage_Level = TL;
             Accessibility_Profile = AP;
-            Prefered_Mode = PM;
+            Preferred_Mode = PM;
             UI_Setting = UI;
             Language = Lang;
             Check_In = get_Current_Time(); // format: Fri Jan 17 10:52:30 2026
@@ -80,8 +80,8 @@ class patient{
         void set_Accessibility_Profile(string AP){Accessibility_Profile = AP;}
         string get_Accessibility_Profile()const{return Accessibility_Profile;}
 
-        void set_Prefered_Mode(string PM){Prefered_Mode = PM;}
-        string get_Prefered_Mode()const{return Prefered_Mode;}
+        void set_Preferred_Mode(string PM){Preferred_Mode = PM;}
+        string get_Preferred_Mode()const{return Preferred_Mode;}
 
         void set_UI_Setting(string UI){UI_Setting = UI;}
         string get_UI_Setting()const{return UI_Setting;}
@@ -149,20 +149,20 @@ void Update_Sevarity(patient p){
 }
 
 //potentilly change email language
-void generate_email(patient p){
-    //check if no email
-    if(p.get_Email() == "NULL"){return;}
+void generate_email(patient& p){
+    if(p.get_Email() == "NULL") return;
+
     string command = "powershell -Command \"Send-MailMessage "
         "-From '" + Admin_Email + "' "
         "-To '" + p.get_Email() + "' "
         "-Subject 'Triage Level Updated' "
-        "-Body 'Your Triage Priority has been updated to " + to_string(p.get_Triage_Level()) + " . Thank you for your patience' "
+        "-Body 'Your Triage Priority has been updated to " + to_string(p.get_Triage_Level()) + " . Thank you for your patience.' "
         "-SmtpServer 'smtp.gmail.com' "
         "-Port 587 "
-        "-Credential (New-Object System.Management.Automation.PSCredential('" + Admin_Email + "',(ConvertTo-SecureString '" + Admin_Email + "' -AsPlainText -Force))) "
+        "-Credential (New-Object System.Management.Automation.PSCredential('" + Admin_Email + "',(ConvertTo-SecureString '" + Admin_Password + "' -AsPlainText -Force))) " // Fixed: use Admin_Password
         "-UseSsl\"";
 
-    system(command.c_str());
+    system(command.c_str()); // Warning: potential security risk
 }
 
 #endif
