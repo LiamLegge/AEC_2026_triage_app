@@ -345,7 +345,11 @@ const PatientIntake = () => {
       }, 8000);
       
     } catch (err) {
-      setError(t('failedToRegister'));
+      // Show more specific error message
+      const errorMessage = err.message && err.message.includes('Backend')
+        ? 'Backend server not available. Please ensure the server is running on port 8080.'
+        : t('failedToRegister');
+      setError(errorMessage);
       console.error(err);
     } finally {
       setIsSubmitting(false);

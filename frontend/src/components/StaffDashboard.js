@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getPatientQueue } from '../services/api';
+import { getPatientQueue, checkBackendConnection } from '../services/api';
 
 const STAFF_PASSWORD = 'ctrlaltelite';
 
@@ -12,6 +12,7 @@ const StaffDashboard = () => {
   const [error, setError] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [isPolling, setIsPolling] = useState(true);
+  const [isBackendConnected, setIsBackendConnected] = useState(false);
   const intervalRef = useRef(null);
 
   // Handle password submission
@@ -40,12 +41,27 @@ const StaffDashboard = () => {
       setPatients(data);
       setLastUpdated(new Date());
       setError(null);
+      setIsBackendConnected(true);
     } catch (err) {
-      setError('Failed to fetch patient queue. Retrying...');
+      setIsBackendConnected(false);
+      setError('Backend server not available. Please ensure the C++ backend is running on port 8080.');
       console.error(err);
     } finally {
       setIsLoading(false);
     }
+  }, []);
+
+  // Check backend connection on mount
+  useEffect(() => {
+    const checkConnection = async () => {
+      const connected = await checkBackendConnection();
+      setIsBackendConnected(connected);
+      if (!connected) {
+        setError('Backend server not available. Please start the C++ backend on port 8080.');
+        setIsLoading(false);
+      }
+    };
+    checkConnection();
   }, []);
 
   // Initial fetch and polling setup
@@ -203,9 +219,9 @@ const StaffDashboard = () => {
             <div className="status-indicator" aria-live="polite">
               <span 
                 className="status-dot" 
-                style={{ background: isPolling ? 'var(--success-color)' : 'var(--warning-color)' }}
+                style={{ background: isBackendConnected ? (isPolling ? 'var(--success-color)' : 'var(--warning-color)') : 'var(--danger-color)' }}
               ></span>
-              <span>{isPolling ? 'Live Updates' : 'Paused'}</span>
+              <span>{isBackendConnected ? (isPolling ? 'Live Updates' : 'Paused') : 'Disconnected'}</span>
             </div>
             
             {/* Control Buttons */}

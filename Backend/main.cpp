@@ -4,6 +4,7 @@
 
 #include "crow/crow.h"
 #include "crow/json.hpp"
+#include "crow/middlewares/cors.h"
 
 #include <string>
 
@@ -26,7 +27,13 @@ void Move_Patient(patient& p, int Target_TL){
 }
 
 int main() {
-    crow::SimpleApp app;
+    crow::App<crow::CORSHandler> app;
+
+    auto& cors = app.get_middleware<crow::CORSHandler>();
+    cors.global()
+        .origin("*")
+        .headers("Content-Type")
+        .methods("GET"_method, "POST"_method, "OPTIONS"_method);
 
     CROW_ROUTE(app, "/api/intake").methods("POST"_method)(
         [](const crow::request& req){
@@ -38,7 +45,7 @@ int main() {
                 p.Name = j.value("name", "N/A");
                 p.Age = j.value("age", 0);
                 p.Birth_Day = j.value("birth_day", "N/A"); // FIXED
-                p.Health_Card = j.value("health_card", 0);
+                p.Health_Card = j.value("health_card", "N/A");
                 p.Chief_Complaint = j.value("chief_complaint", "N/A");
                 p.Triage_Level = j.value("triage_level", 5); // FIXED
                 p.Accessibility_Profile = j.value("accessibility_profile", "None");
