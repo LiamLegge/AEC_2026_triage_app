@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include <chrono>
+
 
 using namespace std;
 
@@ -20,9 +22,10 @@ class patient{
         string Prefered_Mode;
         string UI_Setting;
         string Language;
+        int Check_In;
 
     public:
-        patient(int ID = 0, string N = "John Doe", int A = 0,string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English"){
+        patient(int ID = 0, string N = "John Doe", int A = 0,string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English", ){
             Patient_ID = ID;
             Name = N;
             Age = A;
