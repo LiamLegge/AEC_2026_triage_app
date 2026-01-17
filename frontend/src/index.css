@@ -1,4 +1,5 @@
-/* Base CSS Variables and Reset */
+/* NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers (excluding dark mode section). */
+/* Base CSS Variables and Reset — AI-assisted coding directed by Jackson Chambers. */
 :root {
   /* Default Theme Colors */
   --primary-color: #2563eb;
@@ -30,7 +31,7 @@
   --spacing-xl: 32px;
 }
 
-/* High Contrast Theme */
+/* High Contrast Theme — AI-assisted coding directed by Jackson Chambers. */
 [data-theme="high-contrast"] {
   --primary-color: #0000ff;
   --primary-hover: #0000cc;
@@ -61,7 +62,7 @@
   --input-background: #000000;
 }
 
-/* Large Text Theme */
+/* Large Text Theme — AI-assisted coding directed by Jackson Chambers. */
 [data-ui="large-text"] {
   --font-size-base: 20px;
   --font-size-lg: 24px;
@@ -71,7 +72,7 @@
   --spacing-lg: 32px;
 }
 
-/* Global Reset */
+/* Global Reset — AI-assisted coding directed by Jackson Chambers. */
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
@@ -88,13 +89,13 @@ body {
   min-height: 100vh;
 }
 
-/* Focus styles for accessibility */
+/* Focus styles for accessibility — AI-assisted coding directed by Jackson Chambers. */
 *:focus {
   outline: 3px solid var(--primary-color);
   outline-offset: 2px;
 }
 
-/* Skip to main content link */
+/* Skip to main content link — AI-assisted coding directed by Jackson Chambers. */
 .skip-link {
   position: absolute;
   top: -40px;
@@ -110,14 +111,14 @@ body {
   top: 0;
 }
 
-/* App Container */
+/* App Container — AI-assisted coding directed by Jackson Chambers. */
 .app-container {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* Header */
+/* Header — AI-assisted coding directed by Jackson Chambers. */
 .header {
   background: var(--primary-color);
   color: white;
@@ -159,7 +160,7 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* Accessibility Controls */
+/* Accessibility Controls — AI-assisted coding directed by Jackson Chambers. */
 .access
 .accessibility-controls {
   display: flex;
@@ -185,7 +186,7 @@ body {
   color: var(--primary-color);
 }
 
-/* Language Selector */
+/* Language Selector — AI-assisted coding directed by Jackson Chambers. */
 .language-selector {
   position: relative;
 }
@@ -245,7 +246,7 @@ body {
   font-weight: bold;
 }
 
-/* Main Content */
+/* Main Content — AI-assisted coding directed by Jackson Chambers. */
 main {
   flex: 1;
   padding: var(--spacing-lg);
@@ -254,7 +255,7 @@ main {
   width: 100%;
 }
 
-/* Cards */
+/* Cards — AI-assisted coding directed by Jackson Chambers. */
 .card {
   background: var(--card-background);
   border: 1px solid var(--border-color);

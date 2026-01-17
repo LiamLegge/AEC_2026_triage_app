@@ -1,5 +1,6 @@
-// Translations for the Accessible Triage App
-// Add new languages by adding a new key with the language code
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
+// Translations for the Accessible Triage App — AI-assisted coding directed by Jackson Chambers.
+// Add new languages by adding a new key with the language code — AI-assisted coding directed by Jackson Chambers.
 
 export const translations = {
   English: {
@@ -972,19 +973,19 @@ export const translations = {
   },
 };
 
-// Helper function to get translation
+// Helper function to get translation — AI-assisted coding directed by Jackson Chambers.
 export const getTranslation = (language, key) => {
   const lang = translations[language] || translations.English;
   return lang[key] || translations.English[key] || key;
 };
 
-// Helper hook for components
+// Helper hook for components — AI-assisted coding directed by Jackson Chambers.
 export const useTranslation = (language) => {
   const t = (key) => getTranslation(language, key);
   return { t };
 };
 
-// Language display names (for dropdowns)
+// Language display names (for dropdowns) — AI-assisted coding directed by Jackson Chambers.
 export const languageDisplayNames = {
   English: 'English',
   Spanish: 'Español',
@@ -996,5 +997,5 @@ export const languageDisplayNames = {
   Portuguese: 'Português',
 };
 
-// Available languages array
+// Available languages array — AI-assisted coding directed by Jackson Chambers.
 export const LANGUAGES = Object.keys(translations);

@@ -1,5 +1,6 @@
 import Tesseract from 'tesseract.js';
 
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
 /**
  * Ontario Health Card OCR Service
  * 
@@ -10,23 +11,25 @@ import Tesseract from 'tesseract.js';
  * - PW = Male
  * - MK = Female
  * Only cards ending in PW or MK are considered valid.
+ * AI-assisted coding directed by Jackson Chambers.
  */
 
-// Valid Ontario Health Card version codes
+// Valid Ontario Health Card version codes — AI-assisted coding directed by Jackson Chambers.
 const VALID_VERSION_CODES = ['PW', 'MK'];
 
 /**
  * Main entry point - scans an Ontario Health Card image
  * @param {string} imageDataUrl - Base64 encoded image data URL
  * @returns {Promise<{cardNumber: string|null, dob: string|null}>}
+ * AI-assisted coding directed by Jackson Chambers.
  */
 export const scanCard = async (imageDataUrl, onProgress) => {
   try {
-    // Step 1: Preprocess the image
+    // Step 1: Preprocess the image — AI-assisted coding directed by Jackson Chambers.
     onProgress?.({ status: 'preprocessing', message: 'Processing image...' });
     const processedImage = await preprocessImage(imageDataUrl);
     
-    // Step 2: Run OCR with optimized settings
+    // Step 2: Run OCR with optimized settings — AI-assisted coding directed by Jackson Chambers.
     onProgress?.({ status: 'ocr', message: 'Reading card...', progress: 0 });
     const ocrText = await runOCR(processedImage, (progress) => {
       onProgress?.({ status: 'ocr', message: 'Reading card...', progress });
@@ -34,11 +37,11 @@ export const scanCard = async (imageDataUrl, onProgress) => {
     
     console.log('OCR Raw Text:', ocrText);
     
-    // Step 3: Extract data using regex and heuristics
+    // Step 3: Extract data using regex and heuristics — AI-assisted coding directed by Jackson Chambers.
     onProgress?.({ status: 'extracting', message: 'Extracting data...' });
     const extractedData = extractData(ocrText);
     
-    // TEMP HARDCODE: Fix known OCR issue where 2005 is read as 2006
+    // TEMP HARDCODE: Fix known OCR issue where 2005 is read as 2006 — AI-assisted coding directed by Jackson Chambers.
     if (extractedData.dob && extractedData.dob.startsWith('2006-')) {
       extractedData.dob = extractedData.dob.replace('2006-', '2005-');
       console.log('Hardcoded DOB fix: 2006 → 2005');
@@ -60,6 +63,7 @@ export const scanCard = async (imageDataUrl, onProgress) => {
  * 
  * @param {string} imageDataUrl - Base64 image data URL
  * @returns {Promise<string>} - Processed image data URL
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const preprocessImage = (imageDataUrl) => {
   return new Promise((resolve, reject) => {
@@ -71,59 +75,59 @@ const preprocessImage = (imageDataUrl) => {
         const canvas = document.createElement('canvas');
         const ctx = canvas.getContext('2d');
         
-        // Calculate crop dimensions (right 65% of card)
+        // Calculate crop dimensions (right 65% of card) — AI-assisted coding directed by Jackson Chambers.
         const cropX = Math.floor(img.width * 0.35);
         const cropWidth = img.width - cropX;
         const cropHeight = img.height;
         
-        // Set canvas to cropped size (upscale 1.5x for better OCR on small text)
+        // Set canvas to cropped size (upscale 1.5x for better OCR on small text) — AI-assisted coding directed by Jackson Chambers.
         const scale = 1.5;
         canvas.width = Math.floor(cropWidth * scale);
         canvas.height = Math.floor(cropHeight * scale);
         
-        // Enable image smoothing for better upscale quality
+        // Enable image smoothing for better upscale quality — AI-assisted coding directed by Jackson Chambers.
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
         
-        // Draw cropped region with scaling
+        // Draw cropped region with scaling — AI-assisted coding directed by Jackson Chambers.
         ctx.drawImage(
           img,
           cropX, 0, cropWidth, cropHeight,  // Source rect
           0, 0, canvas.width, canvas.height  // Dest rect (scaled)
         );
         
-        // Get image data for processing
+        // Get image data for processing — AI-assisted coding directed by Jackson Chambers.
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
         
-        // Step 1: Convert to grayscale and enhance contrast
+        // Step 1: Convert to grayscale and enhance contrast — AI-assisted coding directed by Jackson Chambers.
         const grayscaleValues = [];
         for (let i = 0; i < data.length; i += 4) {
           const r = data[i];
           const g = data[i + 1];
           const b = data[i + 2];
           
-          // Use luminance formula weighted to reduce green channel impact
-          // This helps with the green guilloche background
+          // Use luminance formula weighted to reduce green channel impact — AI-assisted coding directed by Jackson Chambers.
+          // This helps with the green guilloche background — AI-assisted coding directed by Jackson Chambers.
           const grayscale = 0.25 * r + 0.60 * g + 0.15 * b;
           grayscaleValues.push(grayscale);
         }
         
-        // Step 2: Calculate adaptive threshold using Otsu's method approximation
-        // Find the optimal threshold that separates text from background
+        // Step 2: Calculate adaptive threshold using Otsu's method approximation — AI-assisted coding directed by Jackson Chambers.
+        // Find the optimal threshold that separates text from background — AI-assisted coding directed by Jackson Chambers.
         let minVal = 255, maxVal = 0;
         for (const val of grayscaleValues) {
           if (val < minVal) minVal = val;
           if (val > maxVal) maxVal = val;
         }
         
-        // Use histogram to find best threshold
+        // Use histogram to find best threshold — AI-assisted coding directed by Jackson Chambers.
         const histogram = new Array(256).fill(0);
         for (const val of grayscaleValues) {
           histogram[Math.floor(val)]++;
         }
         
-        // Simple Otsu threshold approximation
+        // Simple Otsu threshold approximation — AI-assisted coding directed by Jackson Chambers.
         let sum = 0, sumB = 0, wB = 0, wF = 0, maxVariance = 0;
         let threshold = 110; // fallback
         
@@ -148,16 +152,16 @@ const preprocessImage = (imageDataUrl) => {
           }
         }
         
-        // Clamp threshold to reasonable range for health cards
+        // Clamp threshold to reasonable range for health cards — AI-assisted coding directed by Jackson Chambers.
         threshold = Math.max(80, Math.min(140, threshold));
         
-        // Step 3: Apply threshold with slight sharpening for digit edges
+        // Step 3: Apply threshold with slight sharpening for digit edges — AI-assisted coding directed by Jackson Chambers.
         for (let i = 0; i < grayscaleValues.length; i++) {
           const pixelIndex = i * 4;
           const grayscale = grayscaleValues[i];
           
-          // Apply binary threshold
-          // Values closer to threshold get extra processing to preserve edges
+          // Apply binary threshold — AI-assisted coding directed by Jackson Chambers.
+          // Values closer to threshold get extra processing to preserve edges — AI-assisted coding directed by Jackson Chambers.
           let binaryValue;
           if (grayscale < threshold - 15) {
             binaryValue = 0; // Definitely black (text)
@@ -174,10 +178,10 @@ const preprocessImage = (imageDataUrl) => {
           // Alpha stays the same
         }
         
-        // Put processed data back
+          // Put processed data back — AI-assisted coding directed by Jackson Chambers.
         ctx.putImageData(imageData, 0, 0);
         
-        // Return as data URL
+        // Return as data URL — AI-assisted coding directed by Jackson Chambers.
         resolve(canvas.toDataURL('image/png'));
       } catch (err) {
         reject(err);
@@ -194,6 +198,7 @@ const preprocessImage = (imageDataUrl) => {
  * @param {string} imageDataUrl - Preprocessed image data URL
  * @param {function} onProgress - Progress callback (0-100)
  * @returns {Promise<string>} - Raw OCR text
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const runOCR = async (imageDataUrl, onProgress) => {
   const result = await Tesseract.recognize(imageDataUrl, 'eng', {
@@ -202,7 +207,7 @@ const runOCR = async (imageDataUrl, onProgress) => {
         onProgress(Math.round(m.progress * 100));
       }
     },
-    // Tesseract parameters optimized for health cards
+    // Tesseract parameters optimized for health cards — AI-assisted coding directed by Jackson Chambers.
     tessedit_char_whitelist: '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ/-. ',
     tessedit_pageseg_mode: '6', // Assume single uniform block of text
   });
@@ -220,6 +225,7 @@ const runOCR = async (imageDataUrl, onProgress) => {
  * 
  * @param {string} text - Raw OCR text
  * @returns {{cardNumber: string|null, dob: string|null}}
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const extractData = (text) => {
   const cardNumber = extractCardNumber(text);
@@ -239,22 +245,23 @@ const extractData = (text) => {
  * 
  * @param {string} text - OCR text
  * @returns {string|null} - Formatted card number or null if invalid
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const extractCardNumber = (text) => {
-  // Clean up text - keep only digits, letters, dashes, spaces
+  // Clean up text - keep only digits, letters, dashes, spaces — AI-assisted coding directed by Jackson Chambers.
   const cleaned = text.replace(/[^0-9A-Z\-\s]/gi, ' ').toUpperCase();
   
-  // Helper to validate and format if version code is valid
+  // Helper to validate and format if version code is valid — AI-assisted coding directed by Jackson Chambers.
   const formatIfValid = (digits, versionCode) => {
     if (!versionCode) return null;
     const vc = versionCode.toUpperCase();
     if (!VALID_VERSION_CODES.includes(vc)) return null;
     if (digits.length < 9) return null;
-    // Format as ####-###-###-XX (Ontario Health Card format: 4-3-3-2)
+    // Format as ####-###-###-XX (Ontario Health Card format: 4-3-3-2) — AI-assisted coding directed by Jackson Chambers.
     return `${digits.slice(0,4)}-${digits.slice(4,7)}-${digits.slice(7,10).padEnd(3, '0')}-${vc}`;
   };
   
-  // Pattern 1: Standard Ontario format ####-###-###-XX
+  // Pattern 1: Standard Ontario format ####-###-###-XX — AI-assisted coding directed by Jackson Chambers.
   const pattern1 = /(\d{4})\s*[-]\s*(\d{3})\s*[-]\s*(\d{3})\s*[-]?\s*([A-Z]{2})/i;
   const match1 = cleaned.match(pattern1);
   if (match1) {
@@ -263,7 +270,7 @@ const extractCardNumber = (text) => {
     if (result) return result;
   }
   
-  // Pattern 2: 9-10 digits followed by PW or MK
+  // Pattern 2: 9-10 digits followed by PW or MK — AI-assisted coding directed by Jackson Chambers.
   const pattern2 = /(\d{9,10})\s*[-]?\s*(PW|MK)/i;
   const match2 = cleaned.match(pattern2);
   if (match2) {
@@ -272,7 +279,7 @@ const extractCardNumber = (text) => {
     if (result) return result;
   }
   
-  // Pattern 3: Look for PW or MK and work backwards to find digits
+  // Pattern 3: Look for PW or MK and work backwards to find digits — AI-assisted coding directed by Jackson Chambers.
   const vcMatch = cleaned.match(/(PW|MK)/i);
   if (vcMatch) {
     // Get all digits from the text
@@ -283,7 +290,7 @@ const extractCardNumber = (text) => {
     }
   }
   
-  // No valid card found (must have PW or MK)
+  // No valid card found (must have PW or MK) — AI-assisted coding directed by Jackson Chambers.
   return null;
 };
 
@@ -293,6 +300,7 @@ const extractCardNumber = (text) => {
  * 
  * @param {string} text - OCR text
  * @returns {Array<{date: string, label: string, raw: string, year: number, month: number, day: number}>}
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const extractAllDates = (text) => {
   const normalized = text.toUpperCase().replace(/[^\w\s\-\/\.()]/g, ' ');
@@ -301,11 +309,11 @@ const extractAllDates = (text) => {
   
   console.log('Normalized text for date extraction:', normalized);
   
-  // Process line by line to get better context
+  // Process line by line to get better context — AI-assisted coding directed by Jackson Chambers.
   let currentLabel = 'unknown';
   
   for (const line of lines) {
-    // Check for label keywords on this line
+    // Check for label keywords on this line — AI-assisted coding directed by Jackson Chambers.
     if (/BORN|NE\b|NEE|NE\s*\(/.test(line)) {
       currentLabel = 'dob';
     } else if (/ISS|DEL|ISSUED/.test(line)) {
@@ -314,7 +322,7 @@ const extractAllDates = (text) => {
       currentLabel = 'expiry';
     }
     
-    // Find dates on this line
+    // Find dates on this line — AI-assisted coding directed by Jackson Chambers.
     const datePattern = /(\d{4})\s*[-\/\.]\s*(\d{1,2})\s*[-\/\.]\s*(\d{1,2})/g;
     let match;
     
@@ -332,13 +340,13 @@ const extractAllDates = (text) => {
           month,
           day
         });
-        // Reset label after using it
+        // Reset label after using it — AI-assisted coding directed by Jackson Chambers.
         currentLabel = 'unknown';
       }
     }
   }
   
-  // If no dates found with line-by-line, try full text
+  // If no dates found with line-by-line, try full text — AI-assisted coding directed by Jackson Chambers.
   if (dates.length === 0) {
     const datePattern = /(\d{4})\s*[-\/\.]\s*(\d{1,2})\s*[-\/\.]\s*(\d{1,2})/g;
     let match;
@@ -376,22 +384,23 @@ const extractAllDates = (text) => {
  * @param {string} text - Raw OCR text
  * @param {Array} allDates - All extracted dates
  * @returns {string|null} - DOB in YYYY-MM-DD format
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const identifyDOB = (text, allDates) => {
   if (allDates.length === 0) return null;
   
   console.log('All extracted dates:', allDates);
   
-  // Sort dates by year
+  // Sort dates by year — AI-assisted coding directed by Jackson Chambers.
   const sorted = [...allDates].sort((a, b) => a.year - b.year);
   
-  // Require at least three dates (DOB, issue, expiry) before selecting DOB
+  // Require at least three dates (DOB, issue, expiry) before selecting DOB — AI-assisted coding directed by Jackson Chambers.
   if (allDates.length < 3) {
     console.log('Not enough dates found (need 3). Waiting for more scans.');
     return null;
   }
   
-  // Strategy 1: Use explicit labels first
+  // Strategy 1: Use explicit labels first — AI-assisted coding directed by Jackson Chambers.
   const labeledDOB = allDates.find(d => d.label === 'dob');
   const labeledIssue = allDates.find(d => d.label === 'issue');
   const labeledExpiry = allDates.find(d => d.label === 'expiry');

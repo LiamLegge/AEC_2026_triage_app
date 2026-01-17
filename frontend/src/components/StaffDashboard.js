@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getPatientQueue, checkBackendConnection } from '../services/api';
 
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
 const STAFF_PASSWORD = 'ctrlaltelite';
 
 const StaffDashboard = () => {
@@ -15,7 +16,7 @@ const StaffDashboard = () => {
   const [isBackendConnected, setIsBackendConnected] = useState(false);
   const intervalRef = useRef(null);
 
-  // Handle password submission
+  // Handle password submission — AI-assisted coding directed by Jackson Chambers.
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     if (passwordInput === STAFF_PASSWORD) {
@@ -27,14 +28,14 @@ const StaffDashboard = () => {
     }
   };
 
-  // Handle logout
+  // Handle logout — AI-assisted coding directed by Jackson Chambers.
   const handleLogout = () => {
     setIsAuthenticated(false);
     setPasswordInput('');
     setPasswordError('');
   };
 
-  // Fetch patient queue data
+  // Fetch patient queue data — AI-assisted coding directed by Jackson Chambers.
   const fetchQueue = useCallback(async () => {
     try {
       const data = await getPatientQueue();
@@ -51,7 +52,7 @@ const StaffDashboard = () => {
     }
   }, []);
 
-  // Check backend connection on mount
+  // Check backend connection on mount — AI-assisted coding directed by Jackson Chambers.
   useEffect(() => {
     const checkConnection = async () => {
       const connected = await checkBackendConnection();
@@ -64,11 +65,11 @@ const StaffDashboard = () => {
     checkConnection();
   }, []);
 
-  // Initial fetch and polling setup
+  // Initial fetch and polling setup — AI-assisted coding directed by Jackson Chambers.
   useEffect(() => {
     fetchQueue();
     
-    // Poll every 3 seconds as per spec
+    // Poll every 3 seconds as per spec — AI-assisted coding directed by Jackson Chambers.
     if (isPolling) {
       intervalRef.current = setInterval(fetchQueue, 3000);
     }
@@ -80,7 +81,7 @@ const StaffDashboard = () => {
     };
   }, [fetchQueue, isPolling]);
 
-  // Toggle polling
+  // Toggle polling — AI-assisted coding directed by Jackson Chambers.
   const togglePolling = () => {
     setIsPolling(prev => !prev);
     if (isPolling && intervalRef.current) {
@@ -88,13 +89,13 @@ const StaffDashboard = () => {
     }
   };
 
-  // Manual refresh
+  // Manual refresh — AI-assisted coding directed by Jackson Chambers.
   const handleRefresh = () => {
     setIsLoading(true);
     fetchQueue();
   };
 
-  // Get triage level info
+  // Get triage level info — AI-assisted coding directed by Jackson Chambers.
   const getTriageLevelInfo = (level) => {
     const info = {
       1: { label: 'Resuscitation', color: 'triage-1', priority: 'CRITICAL' },
@@ -122,7 +123,7 @@ const StaffDashboard = () => {
     return null;
   };
 
-  // Format timestamp
+  // Format timestamp — AI-assisted coding directed by Jackson Chambers.
   const formatTime = (patient) => {
     const date = getArrivalDate(patient);
     if (!date) return '—';
@@ -132,7 +133,7 @@ const StaffDashboard = () => {
     });
   };
 
-  // Calculate wait time
+  // Calculate wait time — AI-assisted coding directed by Jackson Chambers.
   const getWaitTime = (patient) => {
     const now = Date.now();
     const arrivalDate = getArrivalDate(patient);
@@ -147,7 +148,7 @@ const StaffDashboard = () => {
     return `${hours}h ${mins}m`;
   };
 
-  // Get queue statistics
+  // Get queue statistics — AI-assisted coding directed by Jackson Chambers.
   const getQueueStats = () => {
     const stats = {
       total: patients.length,
@@ -162,7 +163,7 @@ const StaffDashboard = () => {
 
   const stats = getQueueStats();
 
-  // Login Screen
+  // Login Screen — AI-assisted coding directed by Jackson Chambers.
   if (!isAuthenticated) {
     return (
       <div className="staff-dashboard">
@@ -212,7 +213,7 @@ const StaffDashboard = () => {
 
   return (
     <div className="staff-dashboard">
-      {/* Dashboard Header */}
+      {/* Dashboard Header — AI-assisted coding directed by Jackson Chambers. */}
       <div className="card">
         <div style={{ 
           display: 'flex', 
@@ -229,7 +230,7 @@ const StaffDashboard = () => {
           </div>
           
           <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-            {/* Connection Status */}
+            {/* Connection Status — AI-assisted coding directed by Jackson Chambers. */}
             <div className="status-indicator" aria-live="polite">
               <span 
                 className="status-dot" 
@@ -238,7 +239,7 @@ const StaffDashboard = () => {
               <span>{isBackendConnected ? (isPolling ? 'Live Updates' : 'Paused') : 'Disconnected'}</span>
             </div>
             
-            {/* Control Buttons */}
+            {/* Control Buttons — AI-assisted coding directed by Jackson Chambers. */}
             <button 
               className="btn btn-outline" 
               onClick={togglePolling}
@@ -263,7 +264,7 @@ const StaffDashboard = () => {
           </div>
         </div>
 
-        {/* Last Updated */}
+        {/* Last Updated — AI-assisted coding directed by Jackson Chambers. */}
         {lastUpdated && (
           <p style={{ 
             color: 'var(--text-secondary)', 
@@ -275,7 +276,7 @@ const StaffDashboard = () => {
         )}
       </div>
 
-      {/* Queue Statistics */}
+      {/* Queue Statistics — AI-assisted coding directed by Jackson Chambers. */}
       <div className="card">
         <h3 style={{ marginBottom: '16px' }}>Queue Summary</h3>
         <div style={{ 
@@ -316,14 +317,14 @@ const StaffDashboard = () => {
         </div>
       </div>
 
-      {/* Error Message */}
+      {/* Error Message — AI-assisted coding directed by Jackson Chambers. */}
       {error && (
         <div className="alert alert-error" role="alert">
           ⚠️ {error}
         </div>
       )}
 
-      {/* Patient Queue Table */}
+      {/* Patient Queue Table — AI-assisted coding directed by Jackson Chambers. */}
       <div className="card">
         <h3 style={{ marginBottom: '16px' }}>Patient Queue</h3>
         

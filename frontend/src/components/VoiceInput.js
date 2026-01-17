@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
 /**
  * Voice Input Component
  * Uses Web Speech API for speech-to-text transcription
  * Accessibility-friendly with proper ARIA attributes
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const VoiceInput = ({ onTranscript, disabled = false }) => {
   const [isRecording, setIsRecording] = useState(false);
@@ -11,7 +13,7 @@ const VoiceInput = ({ onTranscript, disabled = false }) => {
   const [error, setError] = useState(null);
   const recognitionRef = useRef(null);
 
-  // Check for Web Speech API support
+  // Check for Web Speech API support — AI-assisted coding directed by Jackson Chambers.
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!SpeechRecognition) {
@@ -19,7 +21,7 @@ const VoiceInput = ({ onTranscript, disabled = false }) => {
       return;
     }
 
-    // Initialize speech recognition
+    // Initialize speech recognition — AI-assisted coding directed by Jackson Chambers.
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
@@ -64,7 +66,7 @@ const VoiceInput = ({ onTranscript, disabled = false }) => {
     };
   }, [onTranscript]);
 
-  // Toggle recording
+  // Toggle recording — AI-assisted coding directed by Jackson Chambers.
   const toggleRecording = useCallback(() => {
     if (!recognitionRef.current) return;
 
@@ -83,7 +85,7 @@ const VoiceInput = ({ onTranscript, disabled = false }) => {
     }
   }, [isRecording]);
 
-  // Handle keyboard activation
+  // Handle keyboard activation — AI-assisted coding directed by Jackson Chambers.
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault();
@@ -91,7 +93,7 @@ const VoiceInput = ({ onTranscript, disabled = false }) => {
     }
   };
 
-  // Not supported message
+  // Not supported message — AI-assisted coding directed by Jackson Chambers.
   if (!isSupported) {
     return (
       <div 
@@ -126,7 +128,7 @@ const VoiceInput = ({ onTranscript, disabled = false }) => {
         )}
       </button>
       
-      {/* Recording indicator */}
+      {/* Recording indicator — AI-assisted coding directed by Jackson Chambers. */}
       {isRecording && (
         <div 
           role="status" 
@@ -146,7 +148,7 @@ const VoiceInput = ({ onTranscript, disabled = false }) => {
         </div>
       )}
 
-      {/* Error message */}
+      {/* Error message — AI-assisted coding directed by Jackson Chambers. */}
       {error && (
         <div 
           role="alert"
@@ -169,7 +171,7 @@ const VoiceInput = ({ onTranscript, disabled = false }) => {
   );
 };
 
-// Microphone Icon
+// Microphone Icon — AI-assisted coding directed by Jackson Chambers.
 const MicrophoneIcon = () => (
   <svg 
     width="24" 
@@ -189,7 +191,7 @@ const MicrophoneIcon = () => (
   </svg>
 );
 
-// Microphone Off Icon (for recording state)
+// Microphone Off Icon (for recording state) — AI-assisted coding directed by Jackson Chambers.
 const MicrophoneOffIcon = () => (
   <svg 
     width="24" 

@@ -1,6 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-// Initialize Gemini API - Replace with your actual API key
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
+// Initialize Gemini API - Replace with your actual API key — AI-assisted coding directed by Jackson Chambers.
 const DEFAULT_API_KEY = process.env.REACT_APP_GEMINI_API_KEY || 'YOUR_GEMINI_API_KEY';
 const LOCAL_STORAGE_KEY = 'GEMINI_API_KEY';
 
@@ -24,6 +25,7 @@ const getGenAI = () => {
  * 
  * @param {string} chiefComplaint - The patient's main complaint/symptoms
  * @returns {Promise<number>} Triage level 1-5
+ * AI-assisted coding directed by Jackson Chambers.
  */
 export const getTriageLevel = async (chiefComplaint) => {
   try {
@@ -73,20 +75,20 @@ Triage Level:`;
     const response = await result.response;
     const text = response.text().trim();
     
-    // Parse the response - should be just a number 1-5
+    // Parse the response - should be just a number 1-5 — AI-assisted coding directed by Jackson Chambers.
     const level = parseInt(text, 10);
     
     if (level >= 1 && level <= 5) {
       return level;
     }
     
-    // Fallback to keyword-based assessment if AI response is invalid
+    // Fallback to keyword-based assessment if AI response is invalid — AI-assisted coding directed by Jackson Chambers.
     console.warn('Invalid Gemini response, using fallback assessment');
     return fallbackTriageAssessment(chiefComplaint);
     
   } catch (error) {
     console.error('Error calling Gemini API:', error);
-    // Use fallback assessment if API fails
+    // Use fallback assessment if API fails — AI-assisted coding directed by Jackson Chambers.
     return fallbackTriageAssessment(chiefComplaint);
   }
 };
@@ -97,41 +99,43 @@ Triage Level:`;
  * 
  * @param {string} complaint - Patient's chief complaint
  * @returns {number} Triage level 1-5
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const fallbackTriageAssessment = (complaint) => {
   const lowerComplaint = complaint.toLowerCase();
   
-  // Level 1 - Resuscitation
+  // Level 1 - Resuscitation — AI-assisted coding directed by Jackson Chambers.
   const level1Keywords = ['cardiac arrest', 'not breathing', 'unconscious', 'unresponsive', 'severe bleeding', 'gunshot', 'stab wound'];
   if (level1Keywords.some(keyword => lowerComplaint.includes(keyword))) {
     return 1;
   }
   
-  // Level 2 - Emergent
+  // Level 2 - Emergent — AI-assisted coding directed by Jackson Chambers.
   const level2Keywords = ['chest pain', 'difficulty breathing', 'severe pain', 'allergic reaction', 'stroke', 'heart attack', 'overdose', 'seizure'];
   if (level2Keywords.some(keyword => lowerComplaint.includes(keyword))) {
     return 2;
   }
   
-  // Level 3 - Urgent
+  // Level 3 - Urgent — AI-assisted coding directed by Jackson Chambers.
   const level3Keywords = ['broken', 'fracture', 'high fever', 'moderate pain', 'vomiting blood', 'abdominal pain', 'head injury'];
   if (level3Keywords.some(keyword => lowerComplaint.includes(keyword))) {
     return 3;
   }
   
-  // Level 4 - Less Urgent
+  // Level 4 - Less Urgent — AI-assisted coding directed by Jackson Chambers.
   const level4Keywords = ['minor cut', 'sprain', 'mild pain', 'earache', 'urinary', 'back pain', 'minor burn'];
   if (level4Keywords.some(keyword => lowerComplaint.includes(keyword))) {
     return 4;
   }
   
-  // Level 5 - Non-Urgent (default)
+  // Level 5 - Non-Urgent (default) — AI-assisted coding directed by Jackson Chambers.
   return 5;
 };
 
 /**
  * Check if Gemini API key is configured
  * @returns {boolean}
+ * AI-assisted coding directed by Jackson Chambers.
  */
 export const isGeminiConfigured = () => {
   const apiKey = getApiKey();

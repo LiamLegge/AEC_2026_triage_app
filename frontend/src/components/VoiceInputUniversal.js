@@ -1,9 +1,11 @@
 import React, { useState, useCallback, useRef, useEffect } from 'react';
 
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
 /**
  * Universal Voice Input Component
  * Can be used for any text field - names, health cards, complaints, etc.
  * Includes processing for different input types
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const VoiceInputUniversal = ({ 
   onTranscript, 
@@ -13,7 +15,7 @@ const VoiceInputUniversal = ({
   inputType = "text", // "text", "healthcard", "date", "name"
   size = "medium" // "small", "medium", "large"
 }) => {
-  // Use label prop if provided, otherwise use placeholder
+  // Use label prop if provided, otherwise use placeholder — AI-assisted coding directed by Jackson Chambers.
   const ariaLabel = label || placeholder || "Tap to speak";
   const [isRecording, setIsRecording] = useState(false);
   const [isSupported, setIsSupported] = useState(true);
@@ -89,7 +91,7 @@ const VoiceInputUniversal = ({
     };
   }, [onTranscript, inputType]);
 
-  // Process transcript based on input type
+  // Process transcript based on input type — AI-assisted coding directed by Jackson Chambers.
   const processTranscript = (text, type) => {
     let processed = text.trim();
 
@@ -118,27 +120,27 @@ const VoiceInputUniversal = ({
     return processed;
   };
 
-  // Process health card from speech
+  // Process health card from speech — AI-assisted coding directed by Jackson Chambers.
   const processHealthCard = (text) => {
-    // Word to number mapping
+    // Word to number mapping — AI-assisted coding directed by Jackson Chambers.
     const wordToNum = {
       'zero': '0', 'one': '1', 'two': '2', 'three': '3', 'four': '4',
       'five': '5', 'six': '6', 'seven': '7', 'eight': '8', 'nine': '9',
       'oh': '0', 'o': '0'
     };
 
-    // Convert words to characters
+    // Convert words to characters — AI-assisted coding directed by Jackson Chambers.
     let result = text.toLowerCase();
     
-    // Replace word numbers
+    // Replace word numbers — AI-assisted coding directed by Jackson Chambers.
     Object.entries(wordToNum).forEach(([word, num]) => {
       result = result.replace(new RegExp(`\\b${word}\\b`, 'g'), num);
     });
 
-    // Remove spaces and non-alphanumeric (except we want letters at end)
+    // Remove spaces and non-alphanumeric (except we want letters at end) — AI-assisted coding directed by Jackson Chambers.
     result = result.replace(/[^a-z0-9]/gi, '').toUpperCase();
 
-    // Format as ####-##-###-XX
+    // Format as ####-##-###-XX — AI-assisted coding directed by Jackson Chambers.
     if (result.length >= 12) {
       const digits = result.slice(0, 9).replace(/[^0-9]/g, '');
       const letters = result.slice(-2).replace(/[^A-Z]/g, '');
@@ -150,9 +152,9 @@ const VoiceInputUniversal = ({
     return result;
   };
 
-  // Process date from speech
+  // Process date from speech — AI-assisted coding directed by Jackson Chambers.
   const processDate = (text) => {
-    // Try to parse natural language date
+    // Try to parse natural language date — AI-assisted coding directed by Jackson Chambers.
     const months = {
       'january': '01', 'february': '02', 'march': '03', 'april': '04',
       'may': '05', 'june': '06', 'july': '07', 'august': '08',
@@ -161,7 +163,7 @@ const VoiceInputUniversal = ({
 
     const lower = text.toLowerCase();
     
-    // Try "Month Day Year" format
+    // Try "Month Day Year" format — AI-assisted coding directed by Jackson Chambers.
     const monthMatch = Object.entries(months).find(([name]) => lower.includes(name));
     if (monthMatch) {
       const [monthName, monthNum] = monthMatch;
@@ -226,14 +228,14 @@ const VoiceInputUniversal = ({
         {isRecording ? <MicActiveIcon /> : <MicIcon />}
       </button>
       
-      {/* Live transcript preview */}
+      {/* Live transcript preview — AI-assisted coding directed by Jackson Chambers. */}
       {isRecording && transcript && (
         <div className="voice-transcript-preview">
           "{transcript}"
         </div>
       )}
 
-      {/* Error display */}
+      {/* Error display — AI-assisted coding directed by Jackson Chambers. */}
       {error && (
         <div className="voice-error">
           {error}

@@ -2,6 +2,7 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { scanCard, isLikelyHealthCard } from '../services/ocrService';
 import Tesseract from 'tesseract.js';
 
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
 /**
  * Health Card Scanner Component
  * Uses device camera with live preview and auto-detection
@@ -9,6 +10,7 @@ import Tesseract from 'tesseract.js';
  * 
  * Validation: Only accepts cards ending in PW (male) or MK (female)
  * Format: ####-###-###-XX
+ * AI-assisted coding directed by Jackson Chambers.
  */
 const HealthCardScanner = ({ onScan, onClose }) => {
   const [cameraReady, setCameraReady] = useState(false);
@@ -24,7 +26,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
   const intervalRef = useRef(null);
   const isScanningRef = useRef(false);
 
-  // Start camera immediately on mount
+  // Start camera immediately on mount — AI-assisted coding directed by Jackson Chambers.
   useEffect(() => {
     startCamera();
     return () => {
@@ -32,7 +34,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     };
   }, []);
 
-  // Start camera
+  // Start camera — AI-assisted coding directed by Jackson Chambers.
   const startCamera = async () => {
     try {
       setCameraError(null);
@@ -73,7 +75,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     }
   };
 
-  // Stop camera and cleanup
+  // Stop camera and cleanup — AI-assisted coding directed by Jackson Chambers.
   const stopCamera = useCallback(() => {
     isScanningRef.current = false;
     if (intervalRef.current) {
@@ -86,7 +88,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     }
   }, []);
 
-  // Start continuous auto-scanning (silent until valid card found)
+  // Start continuous auto-scanning (silent until valid card found) — AI-assisted coding directed by Jackson Chambers.
   const startAutoScan = () => {
     if (intervalRef.current) return;
     isScanningRef.current = true;
@@ -99,7 +101,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     }, 1200);
   };
 
-  // Perform a single scan attempt
+  // Perform a single scan attempt — AI-assisted coding directed by Jackson Chambers.
   const performScan = async () => {
     if (!videoRef.current || !canvasRef.current || isProcessing) return;
 
@@ -107,7 +109,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
 
-    // Capture frame
+    // Capture frame — AI-assisted coding directed by Jackson Chambers.
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     ctx.drawImage(video, 0, 0);
@@ -116,7 +118,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     
     setScanCount(prev => prev + 1);
 
-    // Rotate helpful status messages (but don't show "failed" messages)
+    // Rotate helpful status messages (but don't show "failed" messages) — AI-assisted coding directed by Jackson Chambers.
     const messages = [
       'Position your health card in the frame',
       'Scanning... Hold card steady',
@@ -126,7 +128,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     setStatus(messages[scanCount % messages.length]);
 
     try {
-      // Quick OCR check
+      // Quick OCR check — AI-assisted coding directed by Jackson Chambers.
       const result = await Tesseract.recognize(imageData, 'eng', {
         logger: () => {}
       });
@@ -134,23 +136,23 @@ const HealthCardScanner = ({ onScan, onClose }) => {
       const text = result.data.text;
       console.log('Quick scan text:', text.substring(0, 100));
       
-      // Check if we found a valid health card (must have PW or MK)
+      // Check if we found a valid health card (must have PW or MK) — AI-assisted coding directed by Jackson Chambers.
       if (isLikelyHealthCard(text)) {
-        // Potential match - do full processing
+        // Potential match - do full processing — AI-assisted coding directed by Jackson Chambers.
         isScanningRef.current = false;
         clearInterval(intervalRef.current);
         intervalRef.current = null;
         
         await processFullScan(imageData);
       }
-      // If not valid, silently continue scanning
+      // If not valid, silently continue scanning — AI-assisted coding directed by Jackson Chambers.
     } catch (err) {
-      // Silently continue on errors
+      // Silently continue on errors — AI-assisted coding directed by Jackson Chambers.
       console.error('Scan error:', err);
     }
   };
 
-  // Full scan with preprocessing
+  // Full scan with preprocessing — AI-assisted coding directed by Jackson Chambers.
   const processFullScan = async (imageDataUrl) => {
     setIsProcessing(true);
     setStatus('✓ Card detected! Reading...');
@@ -164,15 +166,15 @@ const HealthCardScanner = ({ onScan, onClose }) => {
       
       console.log('Full scan result:', result);
       
-      // Validate: must have valid card number (with PW or MK)
+      // Validate: must have valid card number (with PW or MK) — AI-assisted coding directed by Jackson Chambers.
       if (result.cardNumber && /-(PW|MK)$/.test(result.cardNumber)) {
-        // Valid card found!
+        // Valid card found! — AI-assisted coding directed by Jackson Chambers.
         onScan({
           healthCard: result.cardNumber,
           birthDay: result.dob
         });
       } else {
-        // Not valid - resume scanning silently
+        // Not valid - resume scanning silently — AI-assisted coding directed by Jackson Chambers.
         console.log('Card not valid, resuming scan...');
         setIsProcessing(false);
         setProgress(0);
@@ -192,7 +194,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     }
   };
 
-  // Manual capture
+  // Manual capture — AI-assisted coding directed by Jackson Chambers.
   const manualCapture = async () => {
     if (!videoRef.current || !canvasRef.current || isProcessing) return;
     
@@ -214,7 +216,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
     await processFullScan(imageData);
   };
 
-  // Handle file upload
+  // Handle file upload — AI-assisted coding directed by Jackson Chambers.
   const handleFileUpload = async (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -246,7 +248,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
         </div>
 
         <div className="scanner-content">
-          {/* Camera Error */}
+          {/* Camera Error — AI-assisted coding directed by Jackson Chambers. */}
           {cameraError && (
             <div className="scanner-error-state">
               <div className="error-icon">📷❌</div>
@@ -263,10 +265,10 @@ const HealthCardScanner = ({ onScan, onClose }) => {
             </div>
           )}
 
-          {/* Camera View */}
+          {/* Camera View — AI-assisted coding directed by Jackson Chambers. */}
           {!cameraError && (
             <div className="camera-container">
-              {/* Video element - always render it */}
+              {/* Video element - always render it — AI-assisted coding directed by Jackson Chambers. */}
               <video
                 ref={videoRef}
                 autoPlay
@@ -281,7 +283,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
                 }}
               />
               
-              {/* Overlay - only show when camera ready */}
+              {/* Overlay - only show when camera ready — AI-assisted coding directed by Jackson Chambers. */}
               {cameraReady && (
                 <div className="camera-overlay">
                   <div className="scan-guide">
@@ -297,7 +299,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
                 </div>
               )}
 
-              {/* Loading state before camera ready */}
+              {/* Loading state before camera ready — AI-assisted coding directed by Jackson Chambers. */}
               {!cameraReady && !cameraError && (
                 <div className="camera-loading">
                   <div className="loading-spinner"></div>
@@ -305,7 +307,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
                 </div>
               )}
 
-              {/* Processing overlay */}
+              {/* Processing overlay — AI-assisted coding directed by Jackson Chambers. */}
               {isProcessing && (
                 <div className="processing-overlay">
                   <div className="processing-content">
@@ -322,7 +324,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
             </div>
           )}
 
-          {/* Controls */}
+          {/* Controls — AI-assisted coding directed by Jackson Chambers. */}
           {cameraReady && !isProcessing && (
             <div className="scanner-controls">
               <button className="btn btn-primary capture-btn" onClick={manualCapture}>
@@ -335,7 +337,7 @@ const HealthCardScanner = ({ onScan, onClose }) => {
             </div>
           )}
 
-          {/* Instructions */}
+          {/* Instructions — AI-assisted coding directed by Jackson Chambers. */}
           <div className="scanner-instructions">
             <p><strong>Auto-scanning is active.</strong> Just hold your card steady!</p>
             <ul>

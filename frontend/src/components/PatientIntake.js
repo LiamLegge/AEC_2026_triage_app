@@ -8,11 +8,12 @@ import VoiceInputUniversal from './VoiceInputUniversal';
 import HealthCardScanner from './HealthCardScanner';
 import { languageDisplayNames, LANGUAGES } from '../translations';
 
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers (excluding sidebar sections).
 const PatientIntake = () => {
   const { theme, uiSetting, language, toggleHighContrast, toggleDarkMode, toggleLargeText, toggleLanguage, t } = useAccessibility();
   const { speak, stop, isSpeaking } = useTTS();
   
-  // Form state with new fields
+  // Form state with new fields — AI-assisted coding directed by Jackson Chambers.
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -50,18 +51,19 @@ const PatientIntake = () => {
    * - "1/15/1990" / "01-15-1990" / "1990-01-15"
    * - "15th of January 1990" / "January fifteenth 1990"
    * - Relative: "25 years ago"
+   * AI-assisted coding directed by Jackson Chambers.
    */
   const parseNaturalLanguageDate = (input) => {
     if (!input || typeof input !== 'string') return '';
     
     const text = input.toLowerCase().trim();
     
-    // If already in YYYY-MM-DD format, return as is
+    // If already in YYYY-MM-DD format, return as is — AI-assisted coding directed by Jackson Chambers.
     if (/^\d{4}-\d{2}-\d{2}$/.test(text)) {
       return text;
     }
 
-    // Month name mappings
+    // Month name mappings — AI-assisted coding directed by Jackson Chambers.
     const monthNames = {
       january: 0, jan: 0,
       february: 1, feb: 1,
@@ -77,7 +79,7 @@ const PatientIntake = () => {
       december: 11, dec: 11
     };
 
-    // Ordinal number mappings
+    // Ordinal number mappings — AI-assisted coding directed by Jackson Chambers.
     const ordinals = {
       first: 1, second: 2, third: 3, fourth: 4, fifth: 5,
       sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10,
@@ -89,7 +91,7 @@ const PatientIntake = () => {
     };
 
     try {
-      // Handle relative dates: "25 years ago", "30 years ago"
+      // Handle relative dates: "25 years ago", "30 years ago" — AI-assisted coding directed by Jackson Chambers.
       const yearsAgoMatch = text.match(/(\d+)\s*years?\s+ago/);
       if (yearsAgoMatch) {
         const yearsAgo = parseInt(yearsAgoMatch[1]);
@@ -98,21 +100,21 @@ const PatientIntake = () => {
         return date.toISOString().split('T')[0];
       }
 
-      // Replace ordinal words with numbers
+      // Replace ordinal words with numbers — AI-assisted coding directed by Jackson Chambers.
       let processedText = text;
       for (const [word, num] of Object.entries(ordinals)) {
         processedText = processedText.replace(new RegExp('\\b' + word + '\\b', 'g'), num.toString());
       }
       
-      // Remove ordinal suffixes (1st, 2nd, 3rd, 21st, etc.)
+      // Remove ordinal suffixes (1st, 2nd, 3rd, 21st, etc.) — AI-assisted coding directed by Jackson Chambers.
       processedText = processedText.replace(/(\d+)(st|nd|rd|th)/g, '$1');
       
-      // Remove "of" and "the"
+      // Remove "of" and "the" — AI-assisted coding directed by Jackson Chambers.
       processedText = processedText.replace(/\b(of|the)\b/g, '');
 
-      // Pattern: "Month Day Year" or "Day Month Year" (e.g., "January 15 1990" or "15 January 1990")
+      // Pattern: "Month Day Year" or "Day Month Year" (e.g., "January 15 1990" or "15 January 1990") — AI-assisted coding directed by Jackson Chambers.
       for (const [monthName, monthNum] of Object.entries(monthNames)) {
-        // "January 15 1990" or "January 15, 1990"
+        // "January 15 1990" or "January 15, 1990" — AI-assisted coding directed by Jackson Chambers.
         const pattern1 = new RegExp(`\\b${monthName}\\s+(\\d{1,2})[,\\s]+(\\d{4})\\b`);
         const match1 = processedText.match(pattern1);
         if (match1) {
@@ -121,7 +123,7 @@ const PatientIntake = () => {
           return formatDateISO(year, monthNum, day);
         }
         
-        // "15 January 1990"
+        // "15 January 1990" — AI-assisted coding directed by Jackson Chambers.
         const pattern2 = new RegExp(`\\b(\\d{1,2})\\s+${monthName}[,\\s]+(\\d{4})\\b`);
         const match2 = processedText.match(pattern2);
         if (match2) {
@@ -131,7 +133,7 @@ const PatientIntake = () => {
         }
       }
 
-      // Pattern: MM/DD/YYYY, M/D/YYYY, MM-DD-YYYY, etc.
+      // Pattern: MM/DD/YYYY, M/D/YYYY, MM-DD-YYYY, etc. — AI-assisted coding directed by Jackson Chambers.
       const slashPattern = /\b(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})\b/;
       const slashMatch = processedText.match(slashPattern);
       if (slashMatch) {
@@ -141,7 +143,7 @@ const PatientIntake = () => {
         return formatDateISO(year, month, day);
       }
 
-      // Pattern: YYYY/MM/DD or YYYY-MM-DD
+      // Pattern: YYYY/MM/DD or YYYY-MM-DD — AI-assisted coding directed by Jackson Chambers.
       const isoPattern = /\b(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})\b/;
       const isoMatch = processedText.match(isoPattern);
       if (isoMatch) {
@@ -151,7 +153,7 @@ const PatientIntake = () => {
         return formatDateISO(year, month, day);
       }
 
-      // If no pattern matched but we can parse as date
+      // If no pattern matched but we can parse as date — AI-assisted coding directed by Jackson Chambers.
       const parsed = new Date(input);
       if (!isNaN(parsed.getTime())) {
         return parsed.toISOString().split('T')[0];
@@ -166,6 +168,7 @@ const PatientIntake = () => {
 
   /**
    * Helper to format date as ISO string
+   * AI-assisted coding directed by Jackson Chambers.
    */
   const formatDateISO = (year, month, day) => {
     const date = new Date(year, month, day);
@@ -181,35 +184,37 @@ const PatientIntake = () => {
    * Sanitize email for safe shell usage
    * Removes/escapes characters that could be used for injection attacks
    * Only allows: alphanumeric, @, ., -, _, +
+   * AI-assisted coding directed by Jackson Chambers.
    */
   const sanitizeEmail = (email) => {
     if (!email) return '';
-    // Only allow safe email characters - periods are explicitly allowed
-    // Remove any character that's not alphanumeric, @, ., -, _, +
+    // Only allow safe email characters - periods are explicitly allowed — AI-assisted coding directed by Jackson Chambers.
+    // Remove any character that's not alphanumeric, @, ., -, _, + — AI-assisted coding directed by Jackson Chambers.
     const sanitized = email
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9@.\-_+]/g, '')
-      // Prevent multiple @ symbols
+      // Prevent multiple @ symbols — AI-assisted coding directed by Jackson Chambers.
       .replace(/@+/g, '@')
-      // Prevent consecutive dots (but single dots are fine)
+      // Prevent consecutive dots (but single dots are fine) — AI-assisted coding directed by Jackson Chambers.
       .replace(/\.{2,}/g, '.')
-      // Only remove leading dots/dashes, NOT trailing (to allow typing "john." before "doe")
+      // Only remove leading dots/dashes, NOT trailing (to allow typing "john." before "doe") — AI-assisted coding directed by Jackson Chambers.
       .replace(/^[.\-]+/g, '');
     return sanitized;
   };
 
   /**
    * Validate email format
+   * AI-assisted coding directed by Jackson Chambers.
    */
   const isValidEmail = (email) => {
     if (!email) return true; // Email is optional
-    // Basic email regex - not too strict
+    // Basic email regex - not too strict — AI-assisted coding directed by Jackson Chambers.
     const pattern = /^[a-z0-9._+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
     return pattern.test(email);
   };
   
-  // UI state
+  // UI state — AI-assisted coding directed by Jackson Chambers.
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCalculatingTriage, setIsCalculatingTriage] = useState(false);
   const [triageLevel, setTriageLevel] = useState(null);
@@ -221,7 +226,7 @@ const PatientIntake = () => {
   
   const complaintRef = useRef(null);
 
-  // Calculate age from birthday
+  // Calculate age from birthday — AI-assisted coding directed by Jackson Chambers.
   const calculateAge = (birthday) => {
     if (!birthday) return null;
     const birthDate = new Date(birthday);
@@ -234,12 +239,12 @@ const PatientIntake = () => {
     return age;
   };
 
-  // Auto-detect and set accessibility based on current UI settings
+  // Auto-detect and set accessibility based on current UI settings — AI-assisted coding directed by Jackson Chambers.
   useEffect(() => {
     let detectedProfile = 'None';
     let detectedMode = 'Standard';
 
-    // Detect based on current accessibility settings
+    // Detect based on current accessibility settings — AI-assisted coding directed by Jackson Chambers.
     if (theme === 'high-contrast') {
       detectedProfile = 'Visual Impairment';
       detectedMode = 'Touch';
@@ -256,7 +261,7 @@ const PatientIntake = () => {
     }));
   }, [theme, uiSetting]);
 
-  // Sync form language with global language when changed from header
+  // Sync form language with global language when changed from header — AI-assisted coding directed by Jackson Chambers.
   useEffect(() => {
     setFormData(prev => ({
       ...prev,

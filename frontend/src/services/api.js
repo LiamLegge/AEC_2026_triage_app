@@ -1,8 +1,10 @@
 import axios from 'axios';
 
+// NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
+// Base URL for the C++ backend (Crow) — AI-assisted coding directed by Jackson Chambers.
 const API_BASE_URL = 'http://localhost:8080';
 
-// Create axios instance with default config
+// Create axios instance with default config — AI-assisted coding directed by Jackson Chambers.
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
@@ -11,7 +13,7 @@ const api = axios.create({
   timeout: 10000,
 });
 
-// Track backend connection status
+// Track backend connection status for UI indicators — AI-assisted coding directed by Jackson Chambers.
 let isBackendAvailable = null;
 
 /**
@@ -20,6 +22,7 @@ let isBackendAvailable = null;
  */
 export const checkBackendConnection = async () => {
   try {
+    // Use queue endpoint as a lightweight health check — AI-assisted coding directed by Jackson Chambers.
     await api.get('/api/queue');
     isBackendAvailable = true;
     return true;
@@ -42,6 +45,7 @@ export const getBackendStatus = () => isBackendAvailable;
  */
 export const submitPatientIntake = async (patient) => {
   try {
+    // Send intake payload to backend — AI-assisted coding directed by Jackson Chambers.
     const response = await api.post('/api/intake', patient);
     isBackendAvailable = true;
     return response.data;
@@ -58,6 +62,7 @@ export const submitPatientIntake = async (patient) => {
  */
 export const getPatientQueue = async () => {
   try {
+    // Fetch current queue ordered by priority — AI-assisted coding directed by Jackson Chambers.
     const response = await api.get('/api/queue');
     isBackendAvailable = true;
     return response.data;
@@ -74,6 +79,7 @@ export const getPatientQueue = async () => {
  */
 export const getNextPatient = async () => {
   try {
+    // Ask backend for next patient in priority order — AI-assisted coding directed by Jackson Chambers.
     const response = await api.get('/api/next_patient');
     isBackendAvailable = true;
     return response.data;
