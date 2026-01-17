@@ -10,6 +10,8 @@
 #include <fstream>
 #include <sstream>
 #include <vector>
+#include <chrono>
+#include <thread>
 
 using json = nlohmann::json;
 using namespace std;
@@ -106,12 +108,31 @@ void importPatientData(){
     std::cout << "Loaded " << count << " patients from sample_data.txt\n";
 }
 
+void check_triages(){
+    for(int i = 0; i < 5; i++){
+        for(int n = 0; n < triageQueues[i].size(); n++){
+            Update_Severity(triageQueues[i].arr[n]);
+        }
+    }
+}
+
+void backgroundTask() {
+    while (true) {
+        this_thread::sleep_for(chrono::minutes(25));
+        check_triages();
+    }
+}
+
+
 
 int main() {
     // Load mock patient data from sample_data.txt
     importPatientData();
     
     crow::App<crow::CORSHandler> app;
+
+    thread t(backgroundTask);
+    t.detach();
 
     auto& cors = app.get_middleware<crow::CORSHandler>();
     cors.global()
