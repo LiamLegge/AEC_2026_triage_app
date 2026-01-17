@@ -14,6 +14,8 @@
 using json = nlohmann::json;
 using namespace std;
 
+int Max_ID = 1051;
+
 Queue<patient> triageQueues[5];
 
 void queuePatient(const patient& p) {
@@ -117,7 +119,8 @@ int main() {
                 json j = json::parse(req.body);
 
                 patient p;
-                p.Patient_ID = j.value("id", 0);
+                p.Patient_ID = Max_ID;
+                Max_ID++;
                 p.Name = j.value("name", "N/A");
                 p.Age = j.value("age", 0);
                 p.Birth_Day = j.value("birth_day", "N/A"); // FIXED
