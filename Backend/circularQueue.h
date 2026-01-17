@@ -5,7 +5,7 @@
 #include "patientClass.h"
 using namespace std;
 
-class queue {
+class Queue{
 private:
     patient* arr;
     int front;
@@ -31,7 +31,7 @@ private:
 
 public:
     // Constructor
-    queue(int size = 20) {
+    Queue(int size = 20) {
         capacity = size;
         arr = new patient[capacity];
         front = 0;
@@ -56,7 +56,7 @@ public:
 
     // Remove patient
     patient dequeue() {
-        if (isEmpty()) {
+        if (empty()) {
             cout << "Queue empty\n";
             return patient();
         }
@@ -69,14 +69,23 @@ public:
 
     // Peek front
     patient peek() {
-        if (isEmpty()) {
+        if (empty()) {
             cout << "Queue empty\n";
             return patient();
         }
         return arr[front];
     }
 
-    bool isEmpty() {
+    void pop() {
+        if (count == 0) {
+            std::cout << "Queue is empty!\n";
+            return;
+        }
+        front = (front + 1) % capacity;
+        count--;
+    }
+
+    bool empty() {
         return count == 0;
     }
 
