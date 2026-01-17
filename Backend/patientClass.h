@@ -5,6 +5,7 @@
 #include <string>
 #include <ctime>
 #include <algorithm>
+#include <cstdlib>
 
 using namespace std;
 
@@ -16,6 +17,8 @@ class patient{
         char Sex;
         string Birth_Day;
         string Health_Card;
+        string Email;
+        string Birth_Day;
         string Chief_Complaint;
         unsigned int Triage_Level;
         string Accessibility_Profile;
@@ -26,12 +29,13 @@ class patient{
         int Internal_Time;
 
     public:
-        patient(int ID = 0, string N = "John Doe", int A = 0, char S = 'X', string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English"){
+        patient(int ID = 0, string N = "John Doe", int A = 0, char S = 'X',string E = "NULL", string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English"){
 
             Patient_ID = ID;
             Name = N;
             Age = A;
             Sex = S;
+            Email = E;
             Birth_Day = BD;
             Health_Card = HC;
             Chief_Complaint = CC;
@@ -55,6 +59,9 @@ class patient{
 
         void set_Sex(char S){Sex = S;}
         char get_Sex(){return Sex;}
+
+        void set_Email(string E){Email = E;}
+        string get_Email(){return Email;}
 
         void set_Birth_Day(string BD){Birth_Day = BD;}
         string get_Birth_Day(){return Birth_Day;}
@@ -115,24 +122,44 @@ void Update_Sevarity(patient p){
             if(IT >= CT +  10000){
                 p.set_Triage_Level(1);
                 p.set_Internal_Time(CT);
+                generate_email(p);
             }
         Case 3://Update after an 1.5 hours of waiting
             if(IT >= CT +  13000){
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
+                generate_email(p);
             }
         Case 4://Update after an 2 hours of waiting
             if(IT >= CT +  20000){
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
+                generate_email(p);
             }
         Case 5://Update after an 2.5 hours of waiting
             if(IT >= CT +  23000){
                 p.set_Triage_Level(2);
                 p.set_Internal_Time(CT);
+                generate_email(p);
             }
     }
 }
 
+//potentilly change email language
+void generate_email(patient p){
+    //check if no email
+    if(p.get_Email() == "NULL"){return;}
+    string command = "powershell -Command \"Send-MailMessage "
+        "-From 'hospital@admin.com' "
+        "-To '" + p.get_Email() + "' "
+        "-Subject 'Triage Level Updated' "
+        "-Body 'Your Triage Priority has been updated to " + to_string(p.get_Triage_Level()) + " . Thank you for your patience' "
+        "-SmtpServer 'smtp.gmail.com' "
+        "-Port 587 "
+        "-Credential (New-Object System.Management.Automation.PSCredential('hostpital@gmail.com',(ConvertTo-SecureString 'your_password' -AsPlainText -Force))) "
+        "-UseSsl\"";
+
+    system(command.c_str());
+}
 
 #endif
