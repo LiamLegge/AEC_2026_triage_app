@@ -12,6 +12,13 @@ using namespace std;
 const string Admin_Email = "hospital_email@domain.ca";
 const string Admin_Password = "password123";
 
+bool validate_email(const string& email);
+string get_Current_Time(void);
+int UTC_to_int(string temp);
+void Update_Sevarity(patient p);
+void generate_email(patient& p)
+
+
 class patient{
     private:
         unsigned int Patient_ID;
@@ -37,7 +44,7 @@ class patient{
             Name = N;
             Age = A;
             Sex = S;
-            Email = E;
+            if(validate_email(E)){Email = E;}//check for dangerous emails
             Birth_Day = BD;
             Health_Card = HC;
             Chief_Complaint = CC;
@@ -147,6 +154,26 @@ void Update_Sevarity(patient p){
             }
     }
 }
+
+//email validation sourced from ChatGPT
+bool validate_email(const string& email) {
+    if (email.empty() || email.length() > 254) return false;
+
+    for (char c : email) {
+        if (!isalnum(c) &&
+            c != '@' && c != '.' && c != '_' &&
+            c != '%' && c != '+' && c != '-') {
+            return false; // Reject dangerous characters
+        }
+    }
+
+    // Must contain exactly one '@'
+    if (count(email.begin(), email.end(), '@') != 1)
+        return false;
+
+    return true;
+}
+
 
 //potentilly change email language
 void generate_email(patient& p){
