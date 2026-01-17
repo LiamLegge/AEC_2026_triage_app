@@ -40,6 +40,7 @@ class patient{
         string Language;
         string Check_In;
         int Internal_Time;
+        long long Timestamp;
         unsigned int Triage_Level;
 
         patient(int ID = 0, string N = "John Doe", int A = 0, char S = 'X',string E = "NULL", string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Standard", string UI = "Default", string Lang = "English"){
@@ -60,6 +61,7 @@ class patient{
             Language = Lang;
             Check_In = get_Current_Time(); // format: Fri Jan 17 10:52:30 2026
             Internal_Time = UTC_to_Seconds(get_Current_Time()); //seconds past midnight
+            Timestamp = static_cast<long long>(time(nullptr));
         }
 
         void set_Patient_ID(int ID){Patient_ID = ID;}
@@ -103,6 +105,8 @@ class patient{
 
         string get_Check_In_Full(){return Check_In;}
         int get_Check_In_Time()const{return UTC_to_Seconds(Check_In);}
+
+        long long get_Timestamp()const{return Timestamp;}
 
         void set_Internal_Time(int T){Internal_Time = T;}
         int get_Internal_Time()const{return Internal_Time;}
