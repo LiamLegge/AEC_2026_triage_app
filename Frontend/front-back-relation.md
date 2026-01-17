@@ -15,6 +15,7 @@ JSON
   "age": 34,
   "Sex": "M",
   "health_card": "1234-323-123-PW"
+  "email": "test@dal.ca",
   "birth_day": "2005-06-06"
   "chief_complaint": "Severe Chest Pain",
   "triage_level": 2,
