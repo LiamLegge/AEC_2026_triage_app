@@ -23,14 +23,14 @@
 #include <thread>
 #include <vector>
 
-#include "crow/version.h"
-#include "crow/http_connection.h"
-#include "crow/logging.h"
-#include "crow/task_timer.h"
-#include "crow/socket_acceptors.h"
+#include "version.h"
+#include "http_connection.h"
+#include "logging.h"
+#include "task_timer.h"
+#include "socket_acceptors.h"
 
 
-namespace crow // NOTE: Already documented in "crow/app.h"
+namespace crow // NOTE: Already documented in "app.h"
 {
 #ifdef CROW_USE_BOOST
     namespace asio = boost::asio;
@@ -47,7 +47,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
     public:
       Server(Handler* handler,
              typename Acceptor::endpoint endpoint, 
-             std::string server_name = std::string("Crow/") + VERSION,
+             std::string server_name = std::string("") + VERSION,
              std::tuple<Middlewares...>* middlewares = nullptr,
              unsigned int concurrency = 1,
              uint8_t timeout = 5,

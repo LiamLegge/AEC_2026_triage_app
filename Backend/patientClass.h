@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include <chrono>
+#include <ctime>
 
 
 using namespace std;
@@ -26,6 +26,14 @@ class patient{
 
     public:
         patient(int ID = 0, string N = "John Doe", int A = 0,string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English", ){
+            //get current time
+            time_t currentTime = time(nullptr);
+            tm& utc = gmtime(&currentTime);
+            
+            
+
+            char buffer[30];
+            
             Patient_ID = ID;
             Name = N;
             Age = A;

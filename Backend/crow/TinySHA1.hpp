@@ -42,7 +42,7 @@ namespace sha1
     /**
      * \class SHA1
      * \brief A tiny SHA1 algorithm implementation used internally in the
-     * Crow server (specifically in crow/websocket.h).
+     * Crow server (specifically in websocket.h).
      */
     class SHA1
     {
