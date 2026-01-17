@@ -9,11 +9,11 @@
 #include <asio.hpp>
 #endif
 
-#include "crow/common.h"
-#include "crow/ci_map.h"
-#include "crow/query_string.h"
+#include "common.h"
+#include "ci_map.h"
+#include "query_string.h"
 
-namespace crow // NOTE: Already documented in "crow/app.h"
+namespace crow // NOTE: Already documented in "app.h"
 {
 #ifdef CROW_USE_BOOST
     namespace asio = boost::asio;

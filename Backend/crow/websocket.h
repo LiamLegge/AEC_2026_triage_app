@@ -4,14 +4,14 @@
 #include <optional>
 #include <string>
 #include <thread>
-#include "crow/http_response.h"
-#include "crow/logging.h"
-#include "crow/socket_adaptors.h"
-#include "crow/http_request.h"
-#include "crow/TinySHA1.hpp"
-#include "crow/utility.h"
+#include "http_response.h"
+#include "logging.h"
+#include "socket_adaptors.h"
+#include "http_request.h"
+#include "TinySHA1.hpp"
+#include "utility.h"
 
-namespace crow // NOTE: Already documented in "crow/app.h"
+namespace crow // NOTE: Already documented in "app.h"
 {
 #ifdef CROW_USE_BOOST
     namespace asio = boost::asio;
@@ -25,7 +25,7 @@ namespace crow // NOTE: Already documented in "crow/app.h"
      * \brief Namespace that includes the \ref Connection class
      * and \ref connection struct. Useful for WebSockets connection.
      *
-     * Used specially in crow/websocket.h, crow/app.h and crow/routing.h
+     * Used specially in websocket.h, app.h and routing.h
      */
     namespace websocket
     {
