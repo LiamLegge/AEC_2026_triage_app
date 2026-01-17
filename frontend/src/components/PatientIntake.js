@@ -234,7 +234,7 @@ const PatientIntake = () => {
         preferred_mode: formData.preferred_mode,
         ui_setting: uiSetting === 'large-text' ? 'Large_Text' : 
                     theme === 'high-contrast' ? 'High_Contrast' : 
-                    theme === 'dark-mode' ? 'Dark_Mode' : 'Default',
+                    theme === 'dark-mode' ? 'Dark_Mode' : 'Standard',
         language: formData.language,
         timestamp: Math.floor(Date.now() / 1000),
       };
@@ -334,7 +334,7 @@ const PatientIntake = () => {
           aria-pressed={theme === 'dark-mode'}
           title="Toggle dark mode"
         >
-          Dark Mode
+          🌙 Dark Mode
         </button>
         <button
           type="button"
@@ -354,11 +354,14 @@ const PatientIntake = () => {
         >
           🔤 Larger Buttons
         </button>
-        <button
+         <button
           type="button"
-          title="Toggle large text"
+          className={`quick-access-btn ${uiSetting === 'large-text' ? 'active' : ''}`}
+          onClick={toggleLargeText}
+          aria-pressed={uiSetting === 'large-text'}
+          title="Languages"
         >
-          Languages
+          🌍 Languages
         </button>
       </div>
 
@@ -856,18 +859,6 @@ const PatientIntake = () => {
           padding: var(--spacing-md);
         }
 
-<<<<<<< Updated upstream
-        /* Fixed sidebar accessibility quick actions */
-        .accessibility-quick-sidebar {
-          height: 50%; 
-          width: 160px;
-          position: fixed; 
-          z-index: 1; 
-          top: 1; 
-          right: 0;
-          background-color: #ffffff; 
-          overflow-x: hidden;
-          padding-top: 10px;
 =======
         /* Label with TTS button */
         .label-with-tts {
@@ -946,6 +937,19 @@ const PatientIntake = () => {
           font-size: 0.9em;
           color: var(--text-secondary);
         }
+        
+         /* Fixed sidebar accessibility quick actions */
+        .accessibility-quick-sidebar {
+          height: 50%; 
+          width: 160px;
+          position: fixed; 
+          z-index: 1; 
+          top: 1; 
+          right: 0;
+          background-color: #424242; 
+          overflow-x: hidden;
+          padding-top: 10px;
+        }
 
         .accessibility-quick-bar {
           display: flex;
@@ -958,14 +962,13 @@ const PatientIntake = () => {
           margin-bottom: var(--spacing-md);
           flex-wrap: wrap;
           border: 2px solid var(--border-color);
->>>>>>> Stashed changes
         }
 
         .accessibility-quick-sidebar .quick-bar-vis {
           padding: 6px 8px 6px 16px;
           text-decoration: none;
           font-size: 25px;
-          color: #818181;
+          color: #f1f1f1;
           display: block;
         }
 
@@ -982,8 +985,8 @@ const PatientIntake = () => {
           justify-content: center;
           border-radius: 8px;
           border: 2px solid var(--primary-color);
-          background: transparent;
-          color: var(--primary-color);
+          background: opaque;
+          color: #565656;
           font-size: 16px;
           cursor: pointer;
           transition: all 0.15s;

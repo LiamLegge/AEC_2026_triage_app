@@ -24,12 +24,8 @@ function App() {
     setUiSetting(prev => prev === 'large-text' ? 'default' : 'large-text');
   };
 
-  const toggleLanguage = () => {
-    setLanguage(prev => prev === 'default' ? 'next-language' : 'default');
-  }
-
   return (
-    <AccessibilityContext.Provider value={{ theme, uiSetting, toggleHighContrast, toggleLargeText, toggleLanguage}}>
+    <AccessibilityContext.Provider value={{ theme, uiSetting, toggleHighContrast, toggleLargeText, toggleDarkMode}}>
       <Router>
         <div 
           className="app-container"
@@ -43,7 +39,7 @@ function App() {
           <Header 
             toggleHighContrast={toggleHighContrast}
             toggleLargeText={toggleLargeText}
-            toggleLanguage={toggleLanguage}
+            toggleDarkMode={toggleDarkMode}
             theme={theme}
             uiSetting={uiSetting}
           />
