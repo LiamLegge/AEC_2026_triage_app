@@ -6,21 +6,74 @@ import VoiceInput from './VoiceInput';
 import TextToSpeech, { useTTS } from './TextToSpeech';
 import VoiceInputUniversal from './VoiceInputUniversal';
 import HealthCardScanner from './HealthCardScanner';
+import { languageDisplayNames, LANGUAGES } from '../translations';
 
 const PatientIntake = () => {
-  const { theme, uiSetting, toggleHighContrast, toggleDarkMode, toggleLargeText } = useAccessibility();
+  const { theme, uiSetting, language, toggleHighContrast, toggleDarkMode, toggleLargeText, toggleLanguage, t } = useAccessibility();
   const { speak, stop, isSpeaking } = useTTS();
   
   // Form state with new fields
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     health_card: '',
     birth_day: '',
     chief_complaint: '',
-    accessibility_profile: 'None',
+    accessibility_needs: [], // Changed to array for multiple selections
     preferred_mode: 'Standard',
     language: 'English',
   });
+  
+  // Language dropdown state for sidebar
+  const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const langDropdownRef = useRef(null);
+
+  // Close language dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (langDropdownRef.current && !langDropdownRef.current.contains(event.target)) {
+        setShowLangDropdown(false);
+      }
+    };
+    if (showLangDropdown) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showLangDropdown]);
+
+  /**
+   * Sanitize email for safe shell usage
+   * Removes/escapes characters that could be used for injection attacks
+   * Only allows: alphanumeric, @, ., -, _, +
+   */
+  const sanitizeEmail = (email) => {
+    if (!email) return '';
+    // Only allow safe email characters
+    // Remove any character that's not alphanumeric, @, ., -, _, +
+    const sanitized = email
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9@.\-_+]/g, '')
+      // Prevent multiple @ symbols
+      .replace(/@+/g, '@')
+      // Prevent consecutive dots
+      .replace(/\.{2,}/g, '.')
+      // Remove leading/trailing dots and dashes
+      .replace(/^[.\-]+|[.\-]+$/g, '');
+    return sanitized;
+  };
+
+  /**
+   * Validate email format
+   */
+  const isValidEmail = (email) => {
+    if (!email) return true; // Email is optional
+    // Basic email regex - not too strict
+    const pattern = /^[a-z0-9._+\-]+@[a-z0-9.\-]+\.[a-z]{2,}$/i;
+    return pattern.test(email);
+  };
   
   // UI state
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -68,6 +121,14 @@ const PatientIntake = () => {
     }));
   }, [theme, uiSetting]);
 
+  // Sync form language with global language when changed from header
+  useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      language: language,
+    }));
+  }, [language]);
+
   // Format health card input (####-###-###-XX)
   const formatHealthCard = (value) => {
     // Remove all non-alphanumeric characters
@@ -102,6 +163,16 @@ const PatientIntake = () => {
       processedValue = formatHealthCard(value);
     }
     
+    // Sanitize email as user types
+    if (name === 'email') {
+      processedValue = sanitizeEmail(value);
+    }
+
+    // Update global language when form language changes
+    if (name === 'language') {
+      toggleLanguage(value);
+    }
+    
     setFormData(prev => ({
       ...prev,
       [name]: processedValue,
@@ -127,6 +198,25 @@ const PatientIntake = () => {
     setFormData(prev => ({
       ...prev,
       name: transcript,
+    }));
+  }, []);
+
+  // Handle voice input for email
+  const handleEmailVoice = useCallback((transcript) => {
+    // Convert spoken email to text format
+    // Common voice patterns: "at" -> "@", "dot" -> "."
+    const emailText = transcript
+      .toLowerCase()
+      .replace(/\s+at\s+/gi, '@')
+      .replace(/\s+dot\s+/gi, '.')
+      .replace(/\s+dash\s+/gi, '-')
+      .replace(/\s+underscore\s+/gi, '_')
+      .replace(/\s+/g, '') // Remove remaining spaces
+      .trim();
+    
+    setFormData(prev => ({
+      ...prev,
+      email: sanitizeEmail(emailText),
     }));
   }, []);
 
@@ -196,6 +286,11 @@ const PatientIntake = () => {
       setCurrentStep(1);
       return;
     }
+    if (formData.email && !isValidEmail(formData.email)) {
+      setError('Please enter a valid email address');
+      setCurrentStep(1);
+      return;
+    }
     if (!formData.health_card || !isValidHealthCard(formData.health_card)) {
       setError('Please enter a valid health card number (####-##-###-XX)');
       setCurrentStep(1);
@@ -225,12 +320,13 @@ const PatientIntake = () => {
       const patient = {
         id: Date.now(),
         name: formData.name.trim(),
+        email: sanitizeEmail(formData.email), // Double-sanitize for safety
         age: age,
         health_card: formData.health_card,
         birth_day: formData.birth_day,
         chief_complaint: formData.chief_complaint.trim(),
         triage_level: triageLevel,
-        accessibility_profile: formData.accessibility_profile,
+        accessibility_needs: formData.accessibility_needs, // Now an array
         preferred_mode: formData.preferred_mode,
         ui_setting: uiSetting === 'large-text' ? 'Large_Text' : 
                     theme === 'high-contrast' ? 'High_Contrast' : 
@@ -241,7 +337,7 @@ const PatientIntake = () => {
       
       const result = await submitPatientIntake(patient);
       setSubmitResult(result);
-      announceToScreenReader(`You have been registered. Your queue position is ${result.queue_position}`);
+      announceToScreenReader(`${t('youreRegistered')} ${t('queuePosition')}: ${result.queue_position}`);
       
       // Reset form after delay
       setTimeout(() => {
@@ -249,7 +345,7 @@ const PatientIntake = () => {
       }, 8000);
       
     } catch (err) {
-      setError('Failed to register. Please try again or ask for help.');
+      setError(t('failedToRegister'));
       console.error(err);
     } finally {
       setIsSubmitting(false);
@@ -260,10 +356,11 @@ const PatientIntake = () => {
   const resetForm = () => {
     setFormData({
       name: '',
+      email: '',
       health_card: '',
       birth_day: '',
       chief_complaint: '',
-      accessibility_profile: 'None',
+      accessibility_needs: [],
       preferred_mode: 'Standard',
       language: 'English',
     });
@@ -271,6 +368,26 @@ const PatientIntake = () => {
     setSubmitResult(null);
     setError(null);
     setCurrentStep(1);
+  };
+
+  // Handle accessibility checkbox changes (select all that apply)
+  const handleAccessibilityChange = (value) => {
+    setFormData(prev => {
+      const currentNeeds = prev.accessibility_needs || [];
+      if (currentNeeds.includes(value)) {
+        // Remove if already selected
+        return {
+          ...prev,
+          accessibility_needs: currentNeeds.filter(v => v !== value),
+        };
+      } else {
+        // Add if not selected
+        return {
+          ...prev,
+          accessibility_needs: [...currentNeeds, value],
+        };
+      }
+    });
   };
 
   // Helper to announce messages to screen readers
@@ -285,14 +402,14 @@ const PatientIntake = () => {
     setTimeout(() => announcement.remove(), 1000);
   };
 
-  // Get triage level description
+  // Get triage level description (uses translations)
   const getTriageLevelInfo = (level) => {
     const info = {
-      1: { label: 'Critical', description: 'You will be seen immediately', color: 'triage-1', icon: '🚨' },
-      2: { label: 'Emergency', description: 'You will be seen very soon', color: 'triage-2', icon: '⚠️' },
-      3: { label: 'Urgent', description: 'Wait time: approximately 30 minutes', color: 'triage-3', icon: '🟡' },
-      4: { label: 'Less Urgent', description: 'Wait time: approximately 1-2 hours', color: 'triage-4', icon: '🟢' },
-      5: { label: 'Non-Urgent', description: 'Wait time: may be several hours', color: 'triage-5', icon: '🔵' },
+      1: { label: t('critical'), description: t('criticalDesc'), color: 'triage-1', icon: '🚨' },
+      2: { label: t('emergency'), description: t('emergencyDesc'), color: 'triage-2', icon: '⚠️' },
+      3: { label: t('urgent'), description: t('urgentDesc'), color: 'triage-3', icon: '🟡' },
+      4: { label: t('lessUrgent'), description: t('lessUrgentDesc'), color: 'triage-4', icon: '🟢' },
+      5: { label: t('nonUrgent'), description: t('nonUrgentDesc'), color: 'triage-5', icon: '🔵' },
     };
     return info[level] || { label: 'Unknown', description: '', color: '', icon: '' };
   };
@@ -301,15 +418,15 @@ const PatientIntake = () => {
   const nextStep = () => {
     if (currentStep === 1) {
       if (!formData.name.trim()) {
-        setError('Please enter your full name');
+        setError(t('enterName'));
         return;
       }
       if (!formData.health_card || !isValidHealthCard(formData.health_card)) {
-        setError('Please enter a valid health card number');
+        setError(t('enterValidHealthCard'));
         return;
       }
       if (!formData.birth_day) {
-        setError('Please enter your date of birth');
+        setError(t('enterDOB'));
         return;
       }
     }
@@ -322,54 +439,90 @@ const PatientIntake = () => {
     setCurrentStep(prev => Math.max(prev - 1, 1));
   };
 
+  // Handle language button click in sidebar
+  const handleSidebarLanguageClick = () => {
+    toggleLanguage(); // Cycle to next language
+    setShowLangDropdown(prev => !prev); // Toggle dropdown
+  };
+
   return (
     <div className="patient-intake tablet-optimized">
       {/* Accessibility Quick Actions - Always visible on iPad */}
       <div className="accessibility-quick-sidebar">
-        <span className="quick-sidebar-label">Accessibility Settings</span>
+        <span className="quick-sidebar-label">{t('accessibilitySettings')}</span>
         <button
           type="button"
           className={`quick-access-btn ${theme === 'dark-mode' ? 'active' : ''}`}
           onClick={toggleDarkMode}
           aria-pressed={theme === 'dark-mode'}
-          title="Toggle dark mode"
+          title={t('darkMode')}
         >
-          🌙 Dark Mode
+          {t('darkMode')}
         </button>
         <button
           type="button"
           className={`quick-access-btn ${theme === 'high-contrast' ? 'active' : ''}`}
           onClick={toggleHighContrast}
           aria-pressed={theme === 'high-contrast'}
-          title="Toggle high contrast"
+          title={t('highContrast')}
         >
-          🔲 High Contrast
+          {t('highContrast')}
         </button>
         <button
           type="button"
           className={`quick-access-btn ${uiSetting === 'large-text' ? 'active' : ''}`}
           onClick={toggleLargeText}
           aria-pressed={uiSetting === 'large-text'}
-          title="Toggle large text"
+          title={t('largerButtons')}
         >
-          🔤 Larger Buttons
+          {t('largerButtons')}
         </button>
-         <button
-          type="button"
-          className={`quick-access-btn ${uiSetting === 'large-text' ? 'active' : ''}`}
-          onClick={toggleLargeText}
-          aria-pressed={uiSetting === 'large-text'}
-          title="Languages"
-        >
-          🌍 Languages
-        </button>
+        
+        {/* Language Selector in Sidebar */}
+        <div className="sidebar-language-selector" ref={langDropdownRef}>
+          <button
+            type="button"
+            className="quick-access-btn language-toggle-btn"
+            onClick={handleSidebarLanguageClick}
+            aria-expanded={showLangDropdown}
+            aria-haspopup="listbox"
+            title={`${t('languages')}: ${languageDisplayNames[language] || language}`}
+          >
+            🌍 {languageDisplayNames[language] || language}
+          </button>
+          
+          {showLangDropdown && (
+            <ul 
+              className="sidebar-language-dropdown"
+              role="listbox"
+              aria-label="Select language"
+            >
+              {LANGUAGES.map((lang) => (
+                <li key={lang}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      toggleLanguage(lang);
+                      setShowLangDropdown(false);
+                    }}
+                    role="option"
+                    aria-selected={language === lang}
+                    className={language === lang ? 'selected' : ''}
+                  >
+                    {languageDisplayNames[lang] || lang}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </div>
 
       <div className="card intake-card">
         {/* Header */}
         <div className="card-header">
-          <h2 className="intake-title">🏥 Emergency Check-In</h2>
-          <p className="intake-subtitle">Please complete all fields below</p>
+          <h2 className="intake-title">{t('emergencyCheckIn')}</h2>
+          <p className="intake-subtitle">{t('completeAllFields')}</p>
           
           {/* Progress indicator */}
           <div className="step-progress" role="progressbar" aria-valuenow={currentStep} aria-valuemin="1" aria-valuemax="3">
@@ -380,9 +533,9 @@ const PatientIntake = () => {
             <div className={`step-dot ${currentStep >= 3 ? 'active' : ''}`}>3</div>
           </div>
           <div className="step-labels">
-            <span>Your Info</span>
-            <span>Symptoms</span>
-            <span>Confirm</span>
+            <span>{t('yourInfo')}</span>
+            <span>{t('symptoms')}</span>
+            <span>{t('confirm')}</span>
           </div>
         </div>
 
@@ -390,24 +543,32 @@ const PatientIntake = () => {
         {submitResult && (
           <div className="alert alert-success success-large" role="alert">
             <div className="success-icon">✅</div>
-            <h3>You're Registered!</h3>
-            <p className="queue-position">Queue Position: <strong>#{submitResult.queue_position}</strong></p>
-            <p>Please have a seat. We will call your name when it's your turn.</p>
-            {submitResult.mock && <small>(Demo Mode)</small>}
+            <h3>{t('youreRegistered')}</h3>
+            <p className="queue-position">{t('queuePosition')}: <strong>#{submitResult.queue_position}</strong></p>
+            <p>{t('haveSeat')}</p>
+            {submitResult.mock && <small>{t('demoMode')}</small>}
+            <button 
+              type="button" 
+              className="btn btn-primary btn-lg" 
+              onClick={resetForm}
+              style={{ marginTop: '20px' }}
+            >
+              {t('checkInAnother')}
+            </button>
           </div>
         )}
 
         {/* Error Message */}
         {error && (
           <div className="alert alert-error" role="alert">
-            <strong>⚠️ {error}</strong>
+            <strong>{t('errorPrefix')} {error}</strong>
           </div>
         )}
 
         {/* Gemini API Status */}
         {!isGeminiConfigured() && currentStep === 2 && (
           <div className="alert alert-warning" role="alert">
-            Using automatic symptom assessment
+            {t('usingAutoAssessment')}
           </div>
         )}
 
@@ -417,15 +578,15 @@ const PatientIntake = () => {
             {/* STEP 1: Personal Information */}
             {currentStep === 1 && (
               <fieldset className="form-step">
-                <legend className="step-legend">Step 1: Your Information</legend>
+                <legend className="step-legend">{t('step1Legend')}</legend>
                 
                 <div className="form-group">
                   <div className="label-with-tts">
                     <label htmlFor="name" className="large-label">
-                      Full Name <span className="required">*</span>
+                      {t('fullName')} <span className="required">{t('required')}</span>
                     </label>
                     <TextToSpeech 
-                      text="Full Name. Please enter your first and last name."
+                      text={t('fullNameTTS')}
                       size="small"
                       label="Read field instructions"
                     />
@@ -439,7 +600,7 @@ const PatientIntake = () => {
                       onChange={handleChange}
                       required
                       className="large-input"
-                      placeholder="Enter your full name"
+                      placeholder={t('enterFullName')}
                       autoComplete="name"
                       autoFocus
                     />
@@ -447,18 +608,55 @@ const PatientIntake = () => {
                       onTranscript={handleNameVoice}
                       inputType="name"
                       size="medium"
-                      label="Speak your name"
+                      label={t('speakYourName')}
                     />
                   </div>
                 </div>
 
                 <div className="form-group">
                   <div className="label-with-tts">
-                    <label htmlFor="health_card" className="large-label">
-                      Health Card Number <span className="required">*</span>
+                    <label htmlFor="email" className="large-label">
+                      {t('emailAddress')}
                     </label>
                     <TextToSpeech 
-                      text="Health Card Number. Format is 4 digits, dash, 2 digits, dash, 3 digits, dash, 2 letters. Example: 1234-56-789-AB. You can speak the numbers or use the camera to scan your card."
+                      text={t('emailTTS')}
+                      size="small"
+                      label="Read field instructions"
+                    />
+                  </div>
+                  <div className="input-with-voice">
+                    <input
+                      type="email"
+                      id="email"
+                      name="email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      className="large-input"
+                      placeholder={t('emailPlaceholder')}
+                      autoComplete="email"
+                    />
+                    <VoiceInputUniversal
+                      onTranscript={handleEmailVoice}
+                      inputType="email"
+                      size="medium"
+                      label="Speak your email"
+                    />
+                  </div>
+                  {formData.email && !isValidEmail(formData.email) && (
+                    <small className="input-error">
+                      {t('invalidEmail')}
+                    </small>
+                  )}
+                  <small className="input-help">{t('emailOptional')} • Say "name at domain dot com"</small>
+                </div>
+
+                <div className="form-group">
+                  <div className="label-with-tts">
+                    <label htmlFor="health_card" className="large-label">
+                      {t('healthCardNumber')} <span className="required">{t('required')}</span>
+                    </label>
+                    <TextToSpeech 
+                      text={t('healthCardTTS')}
                       size="small"
                       label="Read field instructions"
                     />
@@ -472,8 +670,8 @@ const PatientIntake = () => {
                       onChange={handleChange}
                       required
                       className="large-input mono-input"
-                      placeholder="####-##-###-XX"
-                      maxLength="14"
+                      placeholder={t('healthCardPlaceholder')}
+                      maxLength="15"
                       inputMode="text"
                     />
                     <div className="input-action-buttons">
@@ -481,29 +679,29 @@ const PatientIntake = () => {
                         onTranscript={handleHealthCardVoice}
                         inputType="healthcard"
                         size="medium"
-                        label="Speak health card number"
+                        label={t('speakHealthCard')}
                       />
                       <button
                         type="button"
                         className="scan-btn"
                         onClick={() => setShowScanner(true)}
-                        aria-label="Scan health card with camera"
-                        title="Use camera to scan your health card"
+                        aria-label={t('scanHealthCard')}
+                        title={t('scanHealthCard')}
                       >
                         📷
                       </button>
                     </div>
                   </div>
-                  <small className="input-help">Format: 1234-56-789-AB • Say numbers or scan your card</small>
+                  <small className="input-help">{t('healthCardHelp')}</small>
                 </div>
 
                 <div className="form-group">
                   <div className="label-with-tts">
                     <label htmlFor="birth_day" className="large-label">
-                      Date of Birth <span className="required">*</span>
+                      {t('dateOfBirth')} <span className="required">{t('required')}</span>
                     </label>
                     <TextToSpeech 
-                      text="Date of Birth. This will be automatically filled when you scan your health card, or you can select a date manually."
+                      text={t('dobTTS')}
                       size="small"
                       label="Read field instructions"
                     />
@@ -520,19 +718,19 @@ const PatientIntake = () => {
                   />
                   {formData.birth_day && (
                     <small className="input-help">
-                      Age: {calculateAge(formData.birth_day)} years old
+                      {t('age')}: {calculateAge(formData.birth_day)} {t('ageYearsOld')}
                     </small>
                   )}
                   <small className="input-help">
-                    💡 Tip: Scan your health card above to auto-fill this field
+                    {t('dobTip')}
                   </small>
                 </div>
 
                 <div className="form-group">
                   <div className="label-with-tts">
-                    <label htmlFor="language" className="large-label">Preferred Language</label>
+                    <label htmlFor="language" className="large-label">{t('preferredLanguage')}</label>
                     <TextToSpeech 
-                      text="Preferred Language. Select the language you are most comfortable with."
+                      text={t('languageTTS')}
                       size="small"
                       label="Read field instructions"
                     />
@@ -544,20 +742,16 @@ const PatientIntake = () => {
                     onChange={handleChange}
                     className="large-input"
                   >
-                    <option value="English">English</option>
-                    <option value="Spanish">Español</option>
-                    <option value="French">Français</option>
-                    <option value="Mandarin">中文</option>
-                    <option value="Arabic">العربية</option>
-                    <option value="Hindi">हिन्दी</option>
-                    <option value="Portuguese">Português</option>
-                    <option value="Other">Other</option>
+                    {LANGUAGES.map((lang) => (
+                      <option key={lang} value={lang}>{languageDisplayNames[lang] || lang}</option>
+                    ))}
+                    <option value="Other">{t('otherLanguage')}</option>
                   </select>
                 </div>
 
                 <div className="step-navigation">
                   <button type="button" className="btn btn-primary btn-xl" onClick={nextStep}>
-                    Next Step →
+                    {t('nextStep')}
                   </button>
                 </div>
               </fieldset>
@@ -566,15 +760,15 @@ const PatientIntake = () => {
             {/* STEP 2: Symptoms */}
             {currentStep === 2 && (
               <fieldset className="form-step">
-                <legend className="step-legend">Step 2: What brings you in today?</legend>
+                <legend className="step-legend">{t('step2Legend')}</legend>
                 
                 <div className="form-group">
                   <div className="label-with-tts">
                     <label htmlFor="chief_complaint" className="large-label">
-                      Describe your symptoms <span className="required">*</span>
+                      {t('describeSymptoms')} <span className="required">{t('required')}</span>
                     </label>
                     <TextToSpeech 
-                      text="Describe your symptoms. Tell us what's wrong. You can type or tap the microphone to speak. Be as detailed as possible about your pain, how long you've had it, and any other symptoms."
+                      text={t('symptomsTTS')}
                       size="small"
                       label="Read field instructions"
                     />
@@ -588,25 +782,25 @@ const PatientIntake = () => {
                       onChange={handleChange}
                       required
                       className="large-input complaint-textarea"
-                      placeholder="Tell us what's wrong... (e.g., 'I have a bad headache and feel dizzy')"
+                      placeholder={t('symptomsPlaceholder')}
                       rows={4}
                     />
                     <VoiceInput 
                       onTranscript={handleVoiceInput}
-                      aria-label="Tap to speak your symptoms"
+                      aria-label={t('tapToSpeak')}
                     />
                   </div>
                   <small className="input-help">
-                    💡 Tip: Tap the microphone to speak instead of typing
+                    {t('symptomsTip')}
                   </small>
                   {formData.chief_complaint && (
                     <div className="read-back-section">
                       <TextToSpeech 
-                        text={`Your symptoms: ${formData.chief_complaint}`}
+                        text={`${t('yourSymptoms')} ${formData.chief_complaint}`}
                         size="small"
-                        label="Read back what I entered"
+                        label={t('readBackLabel')}
                       />
-                      <span className="read-back-label">Listen to your entry</span>
+                      <span className="read-back-label">{t('listenToEntry')}</span>
                     </div>
                   )}
                 </div>
@@ -622,10 +816,10 @@ const PatientIntake = () => {
                     {isCalculatingTriage ? (
                       <>
                         <span className="spinner small"></span>
-                        Assessing...
+                        {t('assessing')}
                       </>
                     ) : (
-                      '🔍 Assess My Symptoms'
+                      `🔍 ${t('assessSymptoms')}`
                     )}
                   </button>
                 </div>
@@ -641,7 +835,7 @@ const PatientIntake = () => {
                       <p>{getTriageLevelInfo(triageLevel).description}</p>
                     </div>
                     <TextToSpeech 
-                      text={`Your triage level is ${triageLevel}, ${getTriageLevelInfo(triageLevel).label}. ${getTriageLevelInfo(triageLevel).description}`}
+                      text={`${t('triageAssessment')}: ${triageLevel}, ${getTriageLevelInfo(triageLevel).label}. ${getTriageLevelInfo(triageLevel).description}`}
                       size="medium"
                       label="Read triage result"
                     />
@@ -650,7 +844,7 @@ const PatientIntake = () => {
 
                 <div className="step-navigation">
                   <button type="button" className="btn btn-outline btn-lg" onClick={prevStep}>
-                    ← Back
+                    {t('previousStep')}
                   </button>
                   <button 
                     type="button" 
@@ -658,7 +852,7 @@ const PatientIntake = () => {
                     onClick={nextStep}
                     disabled={!triageLevel}
                   >
-                    Review & Submit →
+                    {t('step3Legend')} →
                   </button>
                 </div>
               </fieldset>
@@ -667,34 +861,40 @@ const PatientIntake = () => {
             {/* STEP 3: Review & Accessibility */}
             {currentStep === 3 && (
               <fieldset className="form-step">
-                <legend className="step-legend">Step 3: Review & Submit</legend>
+                <legend className="step-legend">{t('step3Legend')}</legend>
                 
                 {/* Summary */}
                 <div className="review-summary">
-                  <h3>Please confirm your information:</h3>
+                  <h3>{t('reviewInfo')}</h3>
                   <div className="summary-grid">
                     <div className="summary-item">
-                      <span className="summary-label">Name:</span>
+                      <span className="summary-label">{t('name')}:</span>
                       <span className="summary-value">{formData.name}</span>
                     </div>
+                    {formData.email && (
+                      <div className="summary-item">
+                        <span className="summary-label">{t('email')}:</span>
+                        <span className="summary-value">{formData.email}</span>
+                      </div>
+                    )}
                     <div className="summary-item">
-                      <span className="summary-label">Health Card:</span>
+                      <span className="summary-label">{t('healthCard')}:</span>
                       <span className="summary-value mono">{formData.health_card}</span>
                     </div>
                     <div className="summary-item">
-                      <span className="summary-label">Date of Birth:</span>
-                      <span className="summary-value">{formData.birth_day} (Age: {calculateAge(formData.birth_day)})</span>
+                      <span className="summary-label">{t('dob')}:</span>
+                      <span className="summary-value">{formData.birth_day} ({t('age')}: {calculateAge(formData.birth_day)})</span>
                     </div>
                     <div className="summary-item">
-                      <span className="summary-label">Language:</span>
-                      <span className="summary-value">{formData.language}</span>
+                      <span className="summary-label">{t('preferredLanguage')}:</span>
+                      <span className="summary-value">{languageDisplayNames[formData.language] || formData.language}</span>
                     </div>
                     <div className="summary-item full-width">
-                      <span className="summary-label">Reason for Visit:</span>
+                      <span className="summary-label">{t('chiefComplaint')}:</span>
                       <span className="summary-value">{formData.chief_complaint}</span>
                     </div>
                     <div className="summary-item">
-                      <span className="summary-label">Priority Level:</span>
+                      <span className="summary-label">{t('priority')}:</span>
                       <span className={`triage-badge ${getTriageLevelInfo(triageLevel).color}`}>
                         Level {triageLevel} - {getTriageLevelInfo(triageLevel).label}
                       </span>
@@ -724,81 +924,89 @@ const PatientIntake = () => {
                   </div>
                 )}
 
-                {/* Additional Accessibility Options */}
+                {/* Additional Accessibility Options - Select All That Apply */}
                 <div className="form-group">
-                  <label className="large-label">Do you need any special assistance?</label>
-                  <div className="accessibility-options">
-                    <label className="option-card">
+                  <label className="large-label">Do you need any special assistance? (Select all that apply)</label>
+                  <div className="accessibility-options checkbox-grid">
+                    <label className={`option-card ${formData.accessibility_needs?.includes('Visual Impairment') ? 'selected' : ''}`}>
                       <input
-                        type="radio"
-                        name="accessibility_profile"
-                        value="None"
-                        checked={formData.accessibility_profile === 'None'}
-                        onChange={handleChange}
-                      />
-                      <span className="option-content">
-                        <span className="option-icon">👤</span>
-                        <span className="option-text">No special assistance needed</span>
-                      </span>
-                    </label>
-                    <label className="option-card">
-                      <input
-                        type="radio"
-                        name="accessibility_profile"
+                        type="checkbox"
+                        name="accessibility_needs"
                         value="Visual Impairment"
-                        checked={formData.accessibility_profile === 'Visual Impairment'}
-                        onChange={handleChange}
+                        checked={formData.accessibility_needs?.includes('Visual Impairment')}
+                        onChange={() => handleAccessibilityChange('Visual Impairment')}
                       />
                       <span className="option-content">
                         <span className="option-icon">👁️</span>
                         <span className="option-text">Visual assistance</span>
                       </span>
                     </label>
-                    <label className="option-card">
+                    <label className={`option-card ${formData.accessibility_needs?.includes('Hearing Impairment') ? 'selected' : ''}`}>
                       <input
-                        type="radio"
-                        name="accessibility_profile"
+                        type="checkbox"
+                        name="accessibility_needs"
                         value="Hearing Impairment"
-                        checked={formData.accessibility_profile === 'Hearing Impairment'}
-                        onChange={handleChange}
+                        checked={formData.accessibility_needs?.includes('Hearing Impairment')}
+                        onChange={() => handleAccessibilityChange('Hearing Impairment')}
                       />
                       <span className="option-content">
                         <span className="option-icon">👂</span>
                         <span className="option-text">Hearing assistance</span>
                       </span>
                     </label>
-                    <label className="option-card">
+                    <label className={`option-card ${formData.accessibility_needs?.includes('Mobility') ? 'selected' : ''}`}>
                       <input
-                        type="radio"
-                        name="accessibility_profile"
+                        type="checkbox"
+                        name="accessibility_needs"
                         value="Mobility"
-                        checked={formData.accessibility_profile === 'Mobility'}
-                        onChange={handleChange}
+                        checked={formData.accessibility_needs?.includes('Mobility')}
+                        onChange={() => handleAccessibilityChange('Mobility')}
                       />
                       <span className="option-content">
                         <span className="option-icon">🦽</span>
                         <span className="option-text">Mobility assistance</span>
                       </span>
                     </label>
-                    <label className="option-card">
+                    <label className={`option-card ${formData.accessibility_needs?.includes('Cognitive') ? 'selected' : ''}`}>
                       <input
-                        type="radio"
-                        name="accessibility_profile"
+                        type="checkbox"
+                        name="accessibility_needs"
                         value="Cognitive"
-                        checked={formData.accessibility_profile === 'Cognitive'}
-                        onChange={handleChange}
+                        checked={formData.accessibility_needs?.includes('Cognitive')}
+                        onChange={() => handleAccessibilityChange('Cognitive')}
                       />
                       <span className="option-content">
                         <span className="option-icon">🧠</span>
                         <span className="option-text">Cognitive support</span>
                       </span>
                     </label>
+                    <label className={`option-card ${formData.accessibility_needs?.includes('Language') ? 'selected' : ''}`}>
+                      <input
+                        type="checkbox"
+                        name="accessibility_needs"
+                        value="Language"
+                        checked={formData.accessibility_needs?.includes('Language')}
+                        onChange={() => handleAccessibilityChange('Language')}
+                      />
+                      <span className="option-content">
+                        <span className="option-icon">🗣️</span>
+                        <span className="option-text">Language/interpreter</span>
+                      </span>
+                    </label>
                   </div>
+                  {formData.accessibility_needs?.length === 0 && (
+                    <small className="input-help">No special assistance needed - that's okay!</small>
+                  )}
+                  {formData.accessibility_needs?.length > 0 && (
+                    <small className="input-help">
+                      Selected: {formData.accessibility_needs.join(', ')}
+                    </small>
+                  )}
                 </div>
 
                 <div className="step-navigation">
                   <button type="button" className="btn btn-outline btn-lg" onClick={prevStep}>
-                    ← Back
+                    {t('previousStep')}
                   </button>
                   <button
                     type="submit"
@@ -808,10 +1016,10 @@ const PatientIntake = () => {
                     {isSubmitting ? (
                       <>
                         <span className="spinner small"></span>
-                        Registering...
+                        {t('submitting')}
                       </>
                     ) : (
-                      '✓ Complete Check-In'
+                      `✓ ${t('submitCheckIn')}`
                     )}
                   </button>
                 </div>
@@ -998,6 +1206,86 @@ const PatientIntake = () => {
           background: var(--primary-color);
           color: white;
           border-color: var(--primary-color);
+        }
+
+        /* Sidebar Language Selector */
+        .sidebar-language-selector {
+          position: relative;
+          width: 100%;
+          margin-top: 16px;
+          padding-top: 16px;
+          border-top: 1px solid #666;
+        }
+
+        .language-toggle-btn {
+          width: 140px !important;
+          font-size: 14px !important;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .sidebar-language-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          background: white;
+          border: 1px solid #ccc;
+          border-radius: 8px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          list-style: none;
+          padding: 8px 0;
+          margin: 8px 0 0 0;
+          min-width: 140px;
+          max-height: 300px;
+          overflow-y: auto;
+          z-index: 1000;
+        }
+
+        .sidebar-language-dropdown li button {
+          display: block;
+          width: 100%;
+          padding: 10px 12px;
+          border: none;
+          background: transparent;
+          text-align: left;
+          cursor: pointer;
+          font-size: 14px;
+          color: #333;
+        }
+
+        .sidebar-language-dropdown li button:hover {
+          background: #e3f2fd;
+        }
+
+        .sidebar-language-dropdown li button.selected {
+          background: #e3f2fd;
+          font-weight: bold;
+        }
+
+        /* Checkbox grid for accessibility options */
+        .checkbox-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+          gap: 12px;
+        }
+
+        .option-card input[type="checkbox"] {
+          position: absolute;
+          opacity: 0;
+          width: 0;
+          height: 0;
+        }
+
+        .option-card.selected {
+          background: var(--primary-color);
+          color: white;
+          border-color: var(--primary-color);
+        }
+
+        .option-card.selected .option-text {
+          color: white;
         }
 
         .intake-card {
