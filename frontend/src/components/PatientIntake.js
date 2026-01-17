@@ -5,7 +5,7 @@ import { useAccessibility } from '../App';
 import VoiceInput from './VoiceInput';
 
 const PatientIntake = () => {
-  const { theme, uiSetting, language, toggleHighContrast, toggleLargeText, toggleLanguage } = useAccessibility();
+  const { theme, uiSetting, language, toggleHighContrast, toggleDarkMode, toggleLargeText, toggleLanguage } = useAccessibility();
   
   // Form state with new fields
   const [formData, setFormData] = useState({
@@ -196,6 +196,7 @@ const PatientIntake = () => {
         preferred_mode: formData.preferred_mode,
         ui_setting: uiSetting === 'large-text' ? 'Large_Text' : 
                     theme === 'high-contrast' ? 'High_Contrast' : 'Default',
+                    theme === 'dark-mode' ? 'Dark_Mode' : 'Default',
         language: formData.language,
         timestamp: Math.floor(Date.now() / 1000),
       };
@@ -291,7 +292,7 @@ const PatientIntake = () => {
         <button
           type="button"
           className={`quick-access-btn ${theme === 'dark-mode' ? 'active' : ''}`}
-          onClick={toggleHighContrast}
+          onClick={toggleDarkMode}
           aria-pressed={theme === 'dark-mode'}
           title="Toggle dark mode"
         >
