@@ -1,6 +1,6 @@
-/**
- * \file app.h
- * \brief This file includes the definition of the crow::Crow class,
+/*
+  file app.h
+ * brief This file includes the definition of the crow::Crow class,
  * the crow::App and crow::SimpleApp aliases, and some macros.
  *
  * In this file are defined:
