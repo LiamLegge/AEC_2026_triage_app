@@ -5,7 +5,7 @@ import { useAccessibility } from '../App';
 import VoiceInput from './VoiceInput';
 
 const PatientIntake = () => {
-  const { theme, uiSetting, toggleHighContrast, toggleLargeText } = useAccessibility();
+  const { theme, uiSetting, language, toggleHighContrast, toggleLargeText, toggleLanguage } = useAccessibility();
   
   // Form state with new fields
   const [formData, setFormData] = useState({
@@ -53,6 +53,10 @@ const PatientIntake = () => {
     }
     if (uiSetting === 'large-text') {
       detectedProfile = detectedProfile === 'None' ? 'Low Vision' : detectedProfile;
+      detectedMode = 'Touch';
+    }
+    if(Language === 'next-language'){
+      detectedProfile = 'Language Assistance';
       detectedMode = 'Touch';
     }
 
@@ -282,13 +286,23 @@ const PatientIntake = () => {
   return (
     <div className="patient-intake tablet-optimized">
       {/* Accessibility Quick Actions - Always visible on iPad */}
-      <div className="accessibility-quick-bar">
-        <span className="quick-bar-label">Need help seeing the screen?</span>
+      <div className="accessibility-quick-sidebar">
+        <span className="quick-sidebar-label">Accessibility Settings</span>
+        <button
+          type="button"
+          className={`quick-access-btn ${theme === 'dark-mode' ? 'active' : ''}`}
+          onClick={toggleHighContrast}
+          aria-pressed={theme === 'dark-mode'}
+          title="Toggle dark mode"
+        >
+          Dark Mode
+        </button>
         <button
           type="button"
           className={`quick-access-btn ${theme === 'high-contrast' ? 'active' : ''}`}
           onClick={toggleHighContrast}
           aria-pressed={theme === 'high-contrast'}
+          title="Toggle high contrast"
         >
           🔲 High Contrast
         </button>
@@ -297,8 +311,18 @@ const PatientIntake = () => {
           className={`quick-access-btn ${uiSetting === 'large-text' ? 'active' : ''}`}
           onClick={toggleLargeText}
           aria-pressed={uiSetting === 'large-text'}
+          title="Toggle large text"
         >
-          🔤 Larger Text
+          🔤 Larger Buttons
+        </button>
+        <button
+          type="button"
+          className={`quick-access-btn ${languages === 'large-text' ? 'active' : ''}`}
+          onClick={toggleLanguage}
+          aria-pressed={languages === 'next-language'}
+          title="Toggle large text"
+        >
+          Languages
         </button>
       </div>
 
@@ -570,6 +594,16 @@ const PatientIntake = () => {
                     <p>Our staff will ensure you receive appropriate assistance.</p>
                   </div>
                 )}
+                {(theme === 'dark-mode' || uiSetting === 'large-text') && (
+                  <div className="accessibility-notice">
+                    <p>📋 We've noted your accessibility preferences:</p>
+                    <ul>
+                      {theme === 'dark-mode' && <li>Dark Mode display</li>}
+                      {uiSetting === 'large-text' && <li>Large text</li>}
+                    </ul>
+                    <p>Our staff will ensure you receive appropriate assistance.</p>
+                  </div>
+                )}
 
                 {/* Additional Accessibility Options */}
                 <div className="form-group">
@@ -698,39 +732,53 @@ const PatientIntake = () => {
           padding: var(--spacing-md);
         }
 
-        .accessibility-quick-bar {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: var(--spacing-md);
-          padding: var(--spacing-md);
-          background: var(--card-background);
-          border-radius: 12px;
-          margin-bottom: var(--spacing-md);
-          flex-wrap: wrap;
-          border: 2px solid var(--border-color);
+        /* Fixed sidebar accessibility quick actions */
+        .accessibility-quick-sidebar {
+          height: 50%; 
+          width: 160px;
+          position: fixed; 
+          z-index: 1; 
+          top: 1; 
+          right: 0;
+          background-color: #ffffff; 
+          overflow-x: hidden;
+          padding-top: 10px;
         }
 
-        .quick-bar-label {
-          font-weight: 500;
-          color: var(--text-secondary);
+        .accessibility-quick-sidebar .quick-bar-vis {
+          padding: 6px 8px 6px 16px;
+          text-decoration: none;
+          font-size: 25px;
+          color: #818181;
+          display: block;
         }
 
         .quick-access-btn {
-          padding: var(--spacing-sm) var(--spacing-md);
+          width: 140px;
+          height: 44px;
+          padding: 20px;
+          display: flex;
+          margin-top: 8px;
+          margin-left: auto;
+          margin-right: auto;
+          margin-bottom: 8px;
+          align-items: center;
+          justify-content: center;
+          border-radius: 8px;
           border: 2px solid var(--primary-color);
           background: transparent;
           color: var(--primary-color);
-          border-radius: 8px;
-          font-size: var(--font-size-base);
+          font-size: 16px;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.15s;
         }
 
         .quick-access-btn:hover,
-        .quick-access-btn.active {
+        .quick-access-btn.active,
+        .quick-access-btn[aria-pressed="true"] {
           background: var(--primary-color);
           color: white;
+          border-color: var(--primary-color);
         }
 
         .intake-card {
@@ -1092,6 +1140,20 @@ const PatientIntake = () => {
           
           .step-navigation .btn {
             width: 100%;
+          }
+
+          /* On small screens collapse to bottom-left to avoid clashing with help button */
+          .accessibility-quick-sidebar {
+            right: auto;
+            left: 20px;
+            bottom: 20px;
+            top: auto;
+            transform: none;
+            flex-direction: row;
+            padding: calc(var(--spacing-sm) / 2);
+          }
+          .accessibility-quick-sidebar .quick-bar-vis {
+            display: none;
           }
         }
       `}</style>
