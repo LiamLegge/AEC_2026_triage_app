@@ -41,6 +41,38 @@ public:
         count = 0;
     }
 
+    // Copy constructor (deep copy)
+    Queue(const Queue& other) {
+        capacity = other.capacity;
+        arr = new T[capacity];
+        front = other.front;
+        rear = other.rear;
+        count = other.count;
+
+        for (int i = 0; i < capacity; i++) {
+            arr[i] = other.arr[i];
+        }
+    }
+
+    // Copy assignment operator (deep copy)
+    Queue& operator=(const Queue& other) {
+        if (this == &other) return *this;
+
+        delete[] arr;
+
+        capacity = other.capacity;
+        arr = new T[capacity];
+        front = other.front;
+        rear = other.rear;
+        count = other.count;
+
+        for (int i = 0; i < capacity; i++) {
+            arr[i] = other.arr[i];
+        }
+
+        return *this;
+    }
+
     // Destructor
     ~Queue() {
         delete[] arr;
@@ -56,8 +88,8 @@ public:
         count++;
     }
 
-    // Remove patient
-    T dequeue() {
+    // Remove front patient
+    patient dequeue() {
         if (empty()) {
             cout << "Queue empty\n";
             return T();
@@ -68,6 +100,50 @@ public:
         count--;
         return temp;
     }
+
+    //removePatient function from chatGPT
+    void removePatient(const patient& target) {
+        if (count == 0) {
+            cout << "Queue empty\n";
+            return;
+        }
+
+        int i = front;
+        bool found = false;
+
+        // Search for the patient by unique ID
+        for (int c = 0; c < count; c++) {
+            if (arr[i].get_Patient_ID() == target.get_Patient_ID()) {
+                found = true;
+                break;
+            }
+            i = (i + 1) % capacity;
+        }
+
+        if (!found) {
+            cout << "Patient not found in queue\n";
+            return;
+        }
+
+        // Shift elements to remove patient
+        int j = i;
+        while (j != rear) {
+            int next = (j + 1) % capacity;
+            arr[j] = arr[next];
+            j = next;
+        }
+
+        // Update rear and count
+        if (rear == 0)
+            rear = capacity - 1;
+        else
+            rear = (rear - 1) % capacity;
+
+        count--;
+        cout << "Patient removed successfully\n";
+    }
+
+
 
     // Peek front
     T peek() {
@@ -105,5 +181,7 @@ public:
         cout << endl;
     }
 };
+
+
 
 #endif
