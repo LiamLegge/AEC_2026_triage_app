@@ -5,7 +5,7 @@
 #include <zlib.h>
 
 // http://zlib.net/manual.html
-namespace crow // NOTE: Already documented in "crow/app.h"
+namespace crow // NOTE: Already documented in "app.h"
 {
     namespace compression
     {

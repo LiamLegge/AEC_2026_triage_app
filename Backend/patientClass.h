@@ -3,11 +3,10 @@
 
 #include <iostream>
 #include <string>
-#include <chrono>
-
+#include <ctime>
+#include <algorithm>
 
 using namespace std;
-
 
 class patient{
     private:
@@ -22,10 +21,16 @@ class patient{
         string Prefered_Mode;
         string UI_Setting;
         string Language;
-        int Check_In;
+        string Check_In;
 
     public:
         patient(int ID = 0, string N = "John Doe", int A = 0,string BD = "NULL",string HC = "NULL", string CC = "NULL", int TL = 5, string AP = "None", string PM = "Strandard", string UI = "Default", string Lang = "English", ){
+            //get current time
+            time_t Now = time(nullptr);
+            string CT = ctime(&Now);
+            if (!CT.empty() && CT.back() == '\n') {//remove trailing \n
+                CT.pop_back();
+            }
             Patient_ID = ID;
             Name = N;
             Age = A;
@@ -37,6 +42,7 @@ class patient{
             Prefered_Mode = PM;
             UI_Setting = UI;
             Language = Lang;
+            Check_In = CT; // format: Fri Jan 17 10:52:30 2026
         }
 
         void set_Patient_ID(int ID){Patient_ID = ID;}
@@ -71,6 +77,16 @@ class patient{
 
         void set_Language(string Lang){Language = Lang;}
         string get_Language(){return Language;}
+
+        string get_Check_In_Full(){return Check_In;}
+        int get_Check_In_Time(){
+            string temp = Check_In;
+            temp = temp.substr(11, 8);
+            temp.erase(remove(temp.begin(), temp.end(), ':'), temp.end());
+            int tempi = stoi(temp);
+            return tempi;
+        }
+        
 };
 
 

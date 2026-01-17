@@ -1,4 +1,8 @@
+#ifndef circularQueue_H
+#define circularQueue_H
+
 #include <iostream>
+#include "patientClass.h"
 using namespace std;
 
 class queue {
@@ -86,7 +90,9 @@ public:
 
     void display() {
         for (int i = 0; i < count; i++)
-            cout << arr[(front + i) % capacity].name << " ";
+            cout << arr[(front + i) % capacity].get_Name() << " ";
         cout << endl;
     }
 };
+
+#endif

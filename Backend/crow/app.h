@@ -1,6 +1,6 @@
-/**
- * \file crow/app.h
- * \brief This file includes the definition of the crow::Crow class,
+/*
+  file app.h
+ * brief This file includes the definition of the crow::Crow class,
  * the crow::App and crow::SimpleApp aliases, and some macros.
  *
  * In this file are defined:
@@ -27,18 +27,18 @@
 #include <thread>
 #include <condition_variable>
 
-#include "crow/version.h"
-#include "crow/settings.h"
-#include "crow/logging.h"
-#include "crow/utility.h"
-#include "crow/routing.h"
-#include "crow/middleware_context.h"
-#include "crow/http_request.h"
-#include "crow/http_server.h"
-#include "crow/task_timer.h"
-#include "crow/websocket.h"
+#include "version.h"
+#include "settings.h"
+#include "logging.h"
+#include "utility.h"
+#include "routing.h"
+#include "middleware_context.h"
+#include "http_request.h"
+#include "http_server.h"
+#include "task_timer.h"
+#include "websocket.h"
 #ifdef CROW_ENABLE_COMPRESSION
-#include "crow/compression.h"
+#include "compression.h"
 #endif // #ifdef CROW_ENABLE_COMPRESSION
 
 
@@ -815,7 +815,7 @@ namespace crow
         unsigned int concurrency_ = 2;
         std::atomic_bool is_bound_ = false;
         uint64_t max_payload_{UINT64_MAX};
-        std::string server_name_ = std::string("Crow/") + VERSION;
+        std::string server_name_ = std::string("") + VERSION;
         std::string bindaddr_ = "0.0.0.0";
         bool use_unix_ = false;
         size_t res_stream_threshold_ = 1048576;

@@ -1,15 +1,15 @@
 #pragma once
 
-#include "crow/http_request.h"
-#include "crow/http_response.h"
-#include "crow/utility.h"
+#include "http_request.h"
+#include "http_response.h"
+#include "utility.h"
 
 #include <tuple>
 #include <type_traits>
 #include <iostream>
 #include <utility>
 
-namespace crow // NOTE: Already documented in "crow/app.h"
+namespace crow // NOTE: Already documented in "app.h"
 {
 
     /// Local middleware should extend ILocalMiddleware
