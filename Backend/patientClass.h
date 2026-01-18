@@ -6,11 +6,23 @@
 #include <ctime>
 #include <algorithm>
 #include <cstdlib>
+#include <cstring>
+#include <curl/curl.h>
+#include <sstream>
+#include <vector>
 
 using namespace std;
 
-const string Admin_Email = "hospital_email@domain.ca";
-const string Admin_Password = "password123";
+// Email credentials loaded from environment variables for security
+// Set GMAIL_USER and GMAIL_APP_PASSWORD environment variables
+inline string getEnvVar(const string& key, const string& defaultVal = "") {
+    char* val = getenv(key.c_str());
+    return val ? string(val) : defaultVal;
+}
+
+// These will be populated from environment variables at runtime
+inline string Admin_Email() { return getEnvVar("GMAIL_USER", "triage.2026.aec@gmail.com"); }
+inline string Admin_Password() { return getEnvVar("GMAIL_APP_PASSWORD", ""); }
 
 class patient; 
 
@@ -19,6 +31,7 @@ string get_Current_Time(void);
 int UTC_to_Seconds(const string& temp);
 void Update_Severity(patient& p);
 void generate_email(patient& p);
+void send_welcome_email(patient& p);
 void Move_Patient(patient& p, int Target_TL);
 
 
@@ -190,22 +203,345 @@ bool validate_email(const string& email) {
     return true;
 }
 
+// CURL callback for reading email payload
+struct EmailPayload {
+    vector<string> lines;
+    size_t currentLine;
+};
 
-//potentilly change email language
-void generate_email(patient& p){
-    if(p.get_Email() == "NULL") return;
+static size_t payload_source(char *ptr, size_t size, size_t nmemb, void *userp) {
+    EmailPayload *payload = (EmailPayload *)userp;
+    
+    if (payload->currentLine >= payload->lines.size()) {
+        return 0;
+    }
+    
+    const string& line = payload->lines[payload->currentLine];
+    size_t len = line.length();
+    
+    if (len > size * nmemb) {
+        return 0;
+    }
+    
+    memcpy(ptr, line.c_str(), len);
+    payload->currentLine++;
+    
+    return len;
+}
 
-    string command = "powershell -Command \"Send-MailMessage "
-        "-From '" + Admin_Email + "' "
-        "-To '" + p.get_Email() + "' "
-        "-Subject 'Triage Level Updated' "
-        "-Body 'Your Triage Priority has been updated to " + to_string(p.get_Triage_Level()) + " . Thank you for your patience.' "
-        "-SmtpServer 'smtp.gmail.com' "
-        "-Port 587 "
-        "-Credential (New-Object System.Management.Automation.PSCredential('" + Admin_Email + "',(ConvertTo-SecureString '" + Admin_Password + "' -AsPlainText -Force))) " // Fixed: use Admin_Password
-        "-UseSsl\"";
+// Helper function to get triage level description and color
+inline string getTriageLevelInfo(int level, string& color, string& description) {
+    switch(level) {
+        case 1:
+            color = "#DC2626";
+            description = "Resuscitation - Immediate";
+            return "1";
+        case 2:
+            color = "#EA580C";
+            description = "Emergent - Very Urgent";
+            return "2";
+        case 3:
+            color = "#CA8A04";
+            description = "Urgent";
+            return "3";
+        case 4:
+            color = "#16A34A";
+            description = "Less Urgent";
+            return "4";
+        case 5:
+            color = "#2563EB";
+            description = "Non-Urgent";
+            return "5";
+        default:
+            color = "#6B7280";
+            description = "Unknown";
+            return "?";
+    }
+}
 
-    system(command.c_str()); // Warning: potential security risk
+// Send HTML email using libcurl SMTP
+void send_html_email(const string& toEmail, const string& subject, const string& htmlBody) {
+    string gmailUser = Admin_Email();
+    string gmailPass = Admin_Password();
+    
+    if (gmailPass.empty()) {
+        cerr << "Email not sent: GMAIL_APP_PASSWORD not configured" << endl;
+        return;
+    }
+
+    CURL *curl;
+    CURLcode res = CURLE_OK;
+    struct curl_slist *recipients = NULL;
+    
+    EmailPayload payload;
+    payload.currentLine = 0;
+    
+    // Email headers
+    payload.lines.push_back("To: " + toEmail + "\r\n");
+    payload.lines.push_back("From: AEC Triage System <" + gmailUser + ">\r\n");
+    payload.lines.push_back("Subject: " + subject + "\r\n");
+    payload.lines.push_back("MIME-Version: 1.0\r\n");
+    payload.lines.push_back("Content-Type: text/html; charset=UTF-8\r\n");
+    payload.lines.push_back("\r\n");
+    payload.lines.push_back(htmlBody + "\r\n");
+
+    curl = curl_easy_init();
+    if (curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, "smtps://smtp.gmail.com:465");
+        curl_easy_setopt(curl, CURLOPT_USE_SSL, (long)CURLUSESSL_ALL);
+        curl_easy_setopt(curl, CURLOPT_USERNAME, gmailUser.c_str());
+        curl_easy_setopt(curl, CURLOPT_PASSWORD, gmailPass.c_str());
+        curl_easy_setopt(curl, CURLOPT_MAIL_FROM, gmailUser.c_str());
+        recipients = curl_slist_append(recipients, toEmail.c_str());
+        curl_easy_setopt(curl, CURLOPT_MAIL_RCPT, recipients);
+        curl_easy_setopt(curl, CURLOPT_READFUNCTION, payload_source);
+        curl_easy_setopt(curl, CURLOPT_READDATA, &payload);
+        curl_easy_setopt(curl, CURLOPT_UPLOAD, 1L);
+
+        res = curl_easy_perform(curl);
+
+        if (res != CURLE_OK) {
+            cerr << "Email send failed: " << curl_easy_strerror(res) << endl;
+        } else {
+            cout << "Email sent successfully to " << toEmail << endl;
+        }
+
+        curl_slist_free_all(recipients);
+        curl_easy_cleanup(curl);
+    }
+}
+
+// Send welcome email when patient checks in
+void send_welcome_email(patient& p) {
+    if (p.get_Email() == "NULL" || p.get_Email().empty() || !validate_email(p.get_Email())) return;
+    
+    string color, description;
+    getTriageLevelInfo(p.get_Triage_Level(), color, description);
+    
+    string html = R"(
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
+                                &#127973; Hospital Triage System
+                            </h1>
+                            <p style="color: #bfdbfe; margin: 10px 0 0 0; font-size: 16px;">
+                                Atlantic Engineering Competition 2026
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Welcome Message -->
+                    <tr>
+                        <td style="padding: 40px 30px 20px 30px;">
+                            <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px;">
+                                Welcome, )" + p.get_Name() + R"(!
+                            </h2>
+                            <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0;">
+                                You have been successfully checked into our emergency triage system. 
+                                We understand waiting can be difficult, and we appreciate your patience.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Triage Level Card -->
+                    <tr>
+                        <td style="padding: 0 30px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 12px; border-left: 4px solid )" + color + R"(;">
+                                <tr>
+                                    <td style="padding: 25px;">
+                                        <p style="color: #6b7280; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 8px 0;">
+                                            Your Triage Level
+                                        </p>
+                                        <table cellpadding="0" cellspacing="0">
+                                            <tr>
+                                                <td style="background-color: )" + color + R"(; color: #ffffff; font-size: 32px; font-weight: 700; width: 50px; height: 50px; text-align: center; border-radius: 8px;">
+                                                    )" + to_string(p.get_Triage_Level()) + R"(
+                                                </td>
+                                                <td style="padding-left: 15px;">
+                                                    <p style="color: #1f2937; font-size: 18px; font-weight: 600; margin: 0;">
+                                                        )" + description + R"(
+                                                    </p>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Details Section -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <h3 style="color: #1f2937; font-size: 18px; margin: 0 0 15px 0;">
+                                &#128203; Your Information
+                            </h3>
+                            <table width="100%" cellpadding="8" cellspacing="0" style="background-color: #f9fafb; border-radius: 8px;">
+                                <tr>
+                                    <td style="color: #6b7280; font-size: 14px; width: 40%;">Patient ID:</td>
+                                    <td style="color: #1f2937; font-size: 14px; font-weight: 500;">)" + to_string(p.get_Patient_ID()) + R"(</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #6b7280; font-size: 14px;">Chief Complaint:</td>
+                                    <td style="color: #1f2937; font-size: 14px; font-weight: 500;">)" + p.get_chief_Complaint() + R"(</td>
+                                </tr>
+                                <tr>
+                                    <td style="color: #6b7280; font-size: 14px;">Check-in Time:</td>
+                                    <td style="color: #1f2937; font-size: 14px; font-weight: 500;">)" + p.get_Check_In_Full() + R"(</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Info Box -->
+                    <tr>
+                        <td style="padding: 0 30px 30px 30px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #eff6ff; border-radius: 8px; border: 1px solid #bfdbfe;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="color: #1e40af; font-size: 14px; margin: 0; line-height: 1.6;">
+                                            <strong>&#128161; What happens next?</strong><br><br>
+                                            You will be called when a medical professional is ready to see you. 
+                                            If your condition changes or worsens, please notify our staff immediately.
+                                            You will receive email updates if your triage level changes.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f9fafb; padding: 25px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                                This is an automated message from the AEC 2026 Triage System.<br>
+                                Built by Team CTRL+ALT+ELITE
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+)";
+    
+    send_html_email(p.get_Email(), "Welcome to Hospital Triage - Check-in Confirmed", html);
+}
+
+// Send triage update email (called when triage level changes)
+void generate_email(patient& p) {
+    if (p.get_Email() == "NULL" || p.get_Email().empty() || !validate_email(p.get_Email())) return;
+    
+    string color, description;
+    getTriageLevelInfo(p.get_Triage_Level(), color, description);
+    
+    string html = R"(
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f3f4f6; padding: 40px 20px;">
+        <tr>
+            <td align="center">
+                <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 16px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); overflow: hidden;">
+                    <!-- Header -->
+                    <tr>
+                        <td style="background: linear-gradient(135deg, )" + color + R"( 0%, )" + color + R"(dd 100%); padding: 40px 30px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 600;">
+                                &#9888;&#65039; Triage Update
+                            </h1>
+                            <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0 0; font-size: 16px;">
+                                Your priority level has changed
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- Update Message -->
+                    <tr>
+                        <td style="padding: 40px 30px 20px 30px; text-align: center;">
+                            <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 22px;">
+                                Hello, )" + p.get_Name() + R"(
+                            </h2>
+                            <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin: 0;">
+                                Your triage priority has been updated based on your wait time.
+                            </p>
+                        </td>
+                    </tr>
+                    
+                    <!-- New Triage Level -->
+                    <tr>
+                        <td style="padding: 0 30px;" align="center">
+                            <table cellpadding="0" cellspacing="0" style="background-color: #f9fafb; border-radius: 12px; border: 2px solid )" + color + R"(;">
+                                <tr>
+                                    <td style="padding: 30px 50px; text-align: center;">
+                                        <p style="color: #6b7280; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; margin: 0 0 15px 0;">
+                                            New Triage Level
+                                        </p>
+                                        <div style="background-color: )" + color + R"(; color: #ffffff; font-size: 48px; font-weight: 700; width: 80px; height: 80px; line-height: 80px; text-align: center; border-radius: 50%; display: inline-block; margin: 0 auto;">
+                                            )" + to_string(p.get_Triage_Level()) + R"(
+                                        </div>
+                                        <p style="color: #1f2937; font-size: 20px; font-weight: 600; margin: 15px 0 0 0;">
+                                            )" + description + R"(
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Notice -->
+                    <tr>
+                        <td style="padding: 30px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #fef3c7; border-radius: 8px; border: 1px solid #fcd34d;">
+                                <tr>
+                                    <td style="padding: 20px;">
+                                        <p style="color: #92400e; font-size: 14px; margin: 0; line-height: 1.6;">
+                                            <strong>&#128276; Please Note:</strong><br><br>
+                                            This update means you will be seen sooner. Please remain in the waiting area 
+                                            and listen for your name to be called. Thank you for your continued patience.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    
+                    <!-- Footer -->
+                    <tr>
+                        <td style="background-color: #f9fafb; padding: 25px 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                            <p style="color: #9ca3af; font-size: 12px; margin: 0;">
+                                This is an automated message from the AEC 2026 Triage System.<br>
+                                Built by Team CTRL+ALT+ELITE
+                            </p>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+</html>
+)";
+    
+    send_html_email(p.get_Email(), "Triage Level Updated - Priority Changed to Level " + to_string(p.get_Triage_Level()), html);
 }
 
 #endif

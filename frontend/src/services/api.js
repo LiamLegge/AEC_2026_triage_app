@@ -1,8 +1,10 @@
 import axios from 'axios';
 
 // NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
-// Base URL for the C++ backend (Crow) — AI-assisted coding directed by Jackson Chambers.
-const API_BASE_URL = 'http://localhost:8080';
+// Base URL for the C++ backend — AI-assisted coding directed by Jackson Chambers.
+// In production (Firebase), use relative URLs so rewrites work
+// In development, use localhost:8080
+const API_BASE_URL = process.env.REACT_APP_API_URL || '';
 
 // Create axios instance with default config — AI-assisted coding directed by Jackson Chambers.
 const api = axios.create({

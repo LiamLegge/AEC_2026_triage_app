@@ -12,6 +12,7 @@
 #include <vector>
 #include <chrono>
 #include <thread>
+#include <cstdlib>  // For getenv (Cloud Run PORT)
 
 using json = nlohmann::json;
 using namespace std;
@@ -150,20 +151,28 @@ int main() {
                 Max_ID++;
                 p.Name = j.value("name", "N/A");
                 p.Age = j.value("age", 0);
-                p.Birth_Day = j.value("birth_day", "N/A"); // FIXED
+                p.Birth_Day = j.value("birth_day", "N/A");
                 p.Health_Card = j.value("health_card", "N/A");
+                p.Email = j.value("email", "");
                 p.Chief_Complaint = j.value("chief_complaint", "N/A");
-                p.Triage_Level = j.value("triage_level", 5); // FIXED
+                p.Triage_Level = j.value("triage_level", 5);
                 p.Accessibility_Profile = j.value("accessibility_profile", "None");
-                p.Preferred_Mode = j.value("preferred_mode", "Standard"); // FIXED
+                p.Preferred_Mode = j.value("preferred_mode", "Standard");
                 p.UI_Setting = j.value("ui_setting", "Default");
                 p.Language = j.value("language", "English");
 
                 queuePatient(p);
+                
+                // Send welcome email to patient (runs in background thread)
+                thread emailThread([p]() {
+                    send_welcome_email(const_cast<patient&>(p));
+                });
+                emailThread.detach();
 
                 json res;
                 res["status"] = "success";
-                res["queue_position"] = triageQueues[p.Triage_Level - 1].size(); // FIXED
+                res["queue_position"] = triageQueues[p.Triage_Level - 1].size();
+                res["patient_id"] = p.Patient_ID;
                 return crow::response{res.dump()};
             } catch (...) {
                 return crow::response{400, "Invalid JSON"};
@@ -224,5 +233,13 @@ int main() {
         }
     );
 
-    app.port(8080).multithreaded().run();
+    // --- CLOUD RUN PORT CONFIGURATION ---
+    // Cloud Run injects PORT env variable; default to 8080 for local dev
+    char* portStr = std::getenv("PORT");
+    int port = (portStr != nullptr) ? std::stoi(portStr) : 8080;
+    
+    std::cout << "Starting server on port " << port << std::endl;
+
+    // Listen on 0.0.0.0 (required for containers)
+    app.bindaddr("0.0.0.0").port(port).multithreaded().run();
 }

@@ -1,0 +1,23 @@
+# Build artifacts
+*.exe
+*.o
+*.obj
+build/
+server
+
+# IDE and editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# Git
+.git/
+.gitignore
+
+# Test files
+test_*.cpp
+
+# Makefiles (using CMake instead)
+Makefile.am
+Makefile.in

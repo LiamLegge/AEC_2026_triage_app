@@ -2,7 +2,8 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getPatientQueue, checkBackendConnection } from '../services/api';
 
 // NOTE: Comments in this file reflect AI-assisted coding directed by Jackson Chambers.
-const STAFF_PASSWORD = 'ctrlaltelite';
+// TODO: Replace with secure authentication system - hardcoded password for demo purposes only
+const STAFF_PASSWORD = 'YOUR_STAFF_PASSWORD_HERE';
 
 const StaffDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
