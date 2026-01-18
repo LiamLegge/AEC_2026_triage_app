@@ -203,7 +203,7 @@ This application was designed with accessibility as a core principle:
 
 ## 👥 Team Credits
 
-### **Team CTRL ALT ELITES**
+### **Team CTRL ALT ELITE**
 
 #### Backend Team
 
