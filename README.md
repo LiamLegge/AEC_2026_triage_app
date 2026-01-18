@@ -1,5 +1,5 @@
 # 🏥 Hospital Triage Application
-
+git
 > **Team CTRL ALT ELITES** — AEC 2026 Submission
 
 A comprehensive, accessible hospital triage management system designed for both patients and medical staff. This full-stack application streamlines the emergency department check-in process while prioritizing accessibility and user experience.
@@ -209,8 +209,8 @@ This application was designed with accessibility as a core principle:
 
 | Name | Role | Contributions |
 |------|------|---------------|
-| **Megan Neville** | API Development | REST API design, endpoint implementation, Crow server configuration, CORS handling |
-| **Ryan Leblanc** | Business Logic | Patient data structures, circular queue implementation, triage algorithms, email notifications |
+| **Megan Neville** | API Development | REST API design, endpoint implementation, Crow server configuration, CORS handling, circular queue implementation |
+| **Ryan Leblanc** | Business Logic | Patient data structures, Documentation, triage algorithms, email notifications |
 
 #### Frontend Team
 
